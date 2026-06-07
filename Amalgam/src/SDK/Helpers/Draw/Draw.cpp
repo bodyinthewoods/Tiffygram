@@ -159,7 +159,7 @@ void CDraw::StringOutlined(const Font_t& tFont, int x, int y, Color_t tColor, Co
 	case ALIGN_BOTTOMRIGHT: x -= vSize.x; y -= vSize.y; break;
 	}
 
-	tColorOut.a *= Math::RemapVal(tColorOut.Brightness(), 0, 255, 0.5f, 0.1f);
+
 	if (tColorOut.a)
 	{
 		std::vector<std::pair<int, int>> vOutline = { { -1, 0 }, { 0, -1 }, { 1, 0 }, { 0, 1 }, { -1, -1 }, { 1, 1 }, { -1, 1 }, { 1, -1 } };
@@ -199,7 +199,7 @@ void CDraw::StringOutlined(const Font_t& tFont, int x, int y, Color_t tColor, Co
 	case ALIGN_BOTTOMRIGHT: x -= vSize.x; y -= vSize.y; break;
 	}
 	
-	tColorOut.a *= Math::RemapVal(tColorOut.Brightness(), 0, 255, 0.5f, 0.1f);
+	
 	if (tColorOut.a)
 	{
 		std::vector<std::pair<int, int>> vOutline = { { -1, 0 }, { 0, -1 }, { 1, 0 }, { 0, 1 }, { -1, -1 }, { 1, 1 }, { -1, 1 }, { 1, -1 } };
