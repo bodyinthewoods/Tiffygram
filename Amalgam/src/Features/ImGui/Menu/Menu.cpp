@@ -12,7 +12,7 @@
 #include "../../Output/Output.h"
 #include "../../World/World.h"
 #include "../../Simulation/ProjectileSimulation/ProjectileSimulation.h"
-
+#include <unordered_set>
 void CMenu::DrawMenu()
 {
 	using namespace ImGui;
@@ -73,6 +73,11 @@ void CMenu::DrawMenu()
 
 		PushClipRect({ 0, 0 }, { ImGui::GetIO().DisplaySize.x, ImGui::GetIO().DisplaySize.y }, false);
 		RenderTwoToneBackground(flSize, {}, F::Render.Background1, F::Render.Background2, 0.f, false);
+		// accent outline around the entire menu window — drawn on foreground to stay on top
+		{
+			float flOutlineInset = H::Draw.Scale(0.5f) - 0.5f;
+			GetForegroundDrawList()->AddRect(vDrawPos + ImVec2(flOutlineInset, flOutlineInset), vDrawPos + vWindowSize - ImVec2(flOutlineInset, flOutlineInset), F::Render.Accent, 0.f, ImDrawFlags_None, H::Draw.Scale());
+		}
 		PopClipRect();
 
 		static int iTab = 0, iAimbotTab = 0, iVisualsTab = 0, iLogsTab = 0, iSettingsTab = 0;
@@ -142,7 +147,7 @@ void CMenu::MenuAimbot(int iTab)
 
 	switch (iTab)
 	{
-	// General
+		// General
 	case 0:
 	{
 		if (BeginTable("AimbotTable", 2))
@@ -460,7 +465,7 @@ void CMenu::MenuAimbot(int iTab)
 					FDropdown(Vars::Visuals::Hitbox::BoundsEnabled, FDropdownEnum::None, -20);
 					FColorPicker(Vars::Colors::BoundHitboxEdgeIgnoreZ, FColorPickerEnum::SameLine, { 0, H::Draw.Scale(20) }, { H::Draw.Scale(10), H::Draw.Scale(20) });
 					FColorPicker(Vars::Colors::BoundHitboxEdge, FColorPickerEnum::SameLine, { H::Draw.Scale(-10), H::Draw.Scale(-20) }, { H::Draw.Scale(10), H::Draw.Scale(20) });
-					FColorPicker(Vars::Colors::BoundHitboxFaceIgnoreZ, FColorPickerEnum::SameLine, { 0, H::Draw.Scale(20) }, {H::Draw.Scale(10), H::Draw.Scale(20)});
+					FColorPicker(Vars::Colors::BoundHitboxFaceIgnoreZ, FColorPickerEnum::SameLine, { 0, H::Draw.Scale(20) }, { H::Draw.Scale(10), H::Draw.Scale(20) });
 					FColorPicker(Vars::Colors::BoundHitboxFace, FColorPickerEnum::SameLine, { H::Draw.Scale(-10), H::Draw.Scale(-20) }, { H::Draw.Scale(10), H::Draw.Scale(20) });
 					SameLine(); DebugDummy({ 0, H::Draw.Scale(48) });
 
@@ -557,7 +562,7 @@ void CMenu::MenuAimbot(int iTab)
 									bool bOriginal = Vars::Visuals::Trajectory::Override.Value;
 									Vars::Visuals::Trajectory::Override.Value = false;
 									bool bSetup = F::ProjSim.GetInfo(pLocal, pWeapon, {}, tProjInfo, ProjSimEnum::Interp)
-											   && F::ProjSim.Initialize(tProjInfo, false);
+										&& F::ProjSim.Initialize(tProjInfo, false);
 									Vars::Visuals::Trajectory::Override.Value = bOriginal;
 									if (bSetup)
 									{
@@ -623,7 +628,7 @@ void CMenu::MenuHVH(int iTab)
 
 	switch (iTab)
 	{
-	// HvH
+		// HvH
 	case 0:
 	{
 		if (BeginTable("HvHTable", 2))
@@ -774,7 +779,7 @@ void CMenu::MenuVisuals(int iTab)
 
 	switch (iTab)
 	{
-	// ESP
+		// ESP
 	case 0:
 	{
 		// fake angle/viewmodel visuals, pickup timers?
@@ -811,12 +816,12 @@ void CMenu::MenuVisuals(int iTab)
 			PopStyleColor();
 
 			auto fPositionToIndex = [](ImVec2 vPos)
-			{
-				int iIndex = floorf((vPos.y - GetCursorPosY() - H::Draw.Scale(4)) / H::Draw.Scale(36)) * 2
-					+ (vPos.x > GetWindowWidth() / 2 ? 1 : 0);
-				iIndex = std::clamp(iIndex, 0, int(F::Groups.m_vGroups.size() - 1));
-				return iIndex;
-			};
+				{
+					int iIndex = floorf((vPos.y - GetCursorPosY() - H::Draw.Scale(4)) / H::Draw.Scale(36)) * 2
+						+ (vPos.x > GetWindowWidth() / 2 ? 1 : 0);
+					iIndex = std::clamp(iIndex, 0, int(F::Groups.m_vGroups.size() - 1));
+					return iIndex;
+				};
 
 			static int iDragging = -1;
 			if (!IsMouseDown(ImGuiMouseButton_Left))
@@ -1315,7 +1320,7 @@ void CMenu::MenuMisc(int iTab)
 
 	switch (iTab)
 	{
-	// Main
+		// Main
 	case 0:
 	{
 		if (BeginTable("MiscTable", 2))
@@ -1447,7 +1452,7 @@ void CMenu::MenuLogs(int iTab)
 
 	switch (iTab)
 	{
-	// PlayerList
+		// PlayerList
 	case 0:
 	{
 		if (Section("Players"))
@@ -1469,328 +1474,328 @@ void CMenu::MenuLogs(int iTab)
 				}
 
 				auto fGetTeamColor = [&](int iTeam, bool bAlive)
-				{
-					switch (iTeam)
 					{
-					case 3: return Color_t(100, 150, 200, bAlive ? 255 : 127).Lerp(Vars::Menu::Theme::Background.Value, 0.5f, LerpEnum::NoAlpha);
-					case 2: return Color_t(255, 100, 100, bAlive ? 255 : 127).Lerp(Vars::Menu::Theme::Background.Value, 0.5f, LerpEnum::NoAlpha);
-					}
-					return Color_t(127, 127, 127, 255).Lerp(Vars::Menu::Theme::Background.Value, 0.5f, LerpEnum::NoAlpha);
-				};
+						switch (iTeam)
+						{
+						case 3: return Color_t(100, 150, 200, bAlive ? 255 : 127).Lerp(Vars::Menu::Theme::Background.Value, 0.5f, LerpEnum::NoAlpha);
+						case 2: return Color_t(255, 100, 100, bAlive ? 255 : 127).Lerp(Vars::Menu::Theme::Background.Value, 0.5f, LerpEnum::NoAlpha);
+						}
+						return Color_t(127, 127, 127, 255).Lerp(Vars::Menu::Theme::Background.Value, 0.5f, LerpEnum::NoAlpha);
+					};
 				auto fDrawPlayer = [&](const ListPlayer& tPlayer, int x, int y)
-				{
-					ImVec2 vOriginalPos = { !x ? GetStyle().WindowPadding.x : GetWindowWidth() / 2 + GetStyle().WindowPadding.x / 2, H::Draw.Scale(35 + 36 * y) };
-
-					// background
-					float flWidth = GetWindowWidth() / 2 - GetStyle().WindowPadding.x * 1.5f;
-					float flHeight = H::Draw.Scale(28);
-					ImColor tColor = ColorToVec(fGetTeamColor(tPlayer.m_iTeam, tPlayer.m_bAlive));
-					ImVec2 vDrawPos = GetDrawPos() + vOriginalPos;
-					GetWindowDrawList()->AddRectFilled(vDrawPos, vDrawPos + ImVec2(flWidth, flHeight), tColor, H::Draw.Scale(4));
-
-					// tag bar
-					bool bPopup = false;
-					bool bIcon = tPlayer.m_bLocal || F::Spectate.GetTarget(true) == tPlayer.m_iUserID || tPlayer.m_bFriend || tPlayer.m_bParty;
-					float flBarWidth = 0.f;
-
-					if (!tPlayer.m_bFake)
 					{
-						std::vector<PriorityLabel_t> vLabels = {};
-						std::vector<std::pair<PriorityLabel_t*, int>> vTags = {};
-						if (int iParty = tPlayer.m_iParty)
+						ImVec2 vOriginalPos = { !x ? GetStyle().WindowPadding.x : GetWindowWidth() / 2 + GetStyle().WindowPadding.x / 2, H::Draw.Scale(35 + 36 * y) };
+
+						// background
+						float flWidth = GetWindowWidth() / 2 - GetStyle().WindowPadding.x * 1.5f;
+						float flHeight = H::Draw.Scale(28);
+						ImColor tColor = ColorToVec(fGetTeamColor(tPlayer.m_iTeam, tPlayer.m_bAlive));
+						ImVec2 vDrawPos = GetDrawPos() + vOriginalPos;
+						GetWindowDrawList()->AddRectFilled(vDrawPos, vDrawPos + ImVec2(flWidth, flHeight), tColor, H::Draw.Scale(4));
+
+						// tag bar
+						bool bPopup = false;
+						bool bIcon = tPlayer.m_bLocal || F::Spectate.GetTarget(true) == tPlayer.m_iUserID || tPlayer.m_bFriend || tPlayer.m_bParty;
+						float flBarWidth = 0.f;
+
+						if (!tPlayer.m_bFake)
 						{
-							auto pTag = &F::PlayerUtils.m_vTags[F::PlayerUtils.TagToIndex(PARTY_TAG)];
-							if (!--iParty)
+							std::vector<PriorityLabel_t> vLabels = {};
+							std::vector<std::pair<PriorityLabel_t*, int>> vTags = {};
+							if (int iParty = tPlayer.m_iParty)
+							{
+								auto pTag = &F::PlayerUtils.m_vTags[F::PlayerUtils.TagToIndex(PARTY_TAG)];
+								if (!--iParty)
+									vTags.emplace_back(pTag, 0);
+								else
+									vLabels.emplace_back(std::format("{}: {}", pTag->m_sName, iParty), pTag->m_tColor.HueShift(iParty * 360.f / iPartyCount));
+							}
+							if (tPlayer.m_bF2P)
+							{
+								auto pTag = &F::PlayerUtils.m_vTags[F::PlayerUtils.TagToIndex(F2P_TAG)];
 								vTags.emplace_back(pTag, 0);
-							else
-								vLabels.emplace_back(std::format("{}: {}", pTag->m_sName, iParty), pTag->m_tColor.HueShift(iParty * 360.f / iPartyCount));
-						}
-						if (tPlayer.m_bF2P)
-						{
-							auto pTag = &F::PlayerUtils.m_vTags[F::PlayerUtils.TagToIndex(F2P_TAG)];
-							vTags.emplace_back(pTag, 0);
-						}
-						for (auto& iID : F::PlayerUtils.GetPlayerTags(tPlayer.m_uAccountID))
-						{
-							if (auto pTag = F::PlayerUtils.GetTag(iID))
-								vTags.emplace_back(pTag, iID);
-						}
-
-						if (!vLabels.empty() || !vTags.empty())
-						{
-							PushFont(F::Render.FontSmall);
-							flBarWidth = H::Draw.Scale(4);
-							for (auto& tTag : vLabels)
-								flBarWidth += FCalcTextSize(tTag.m_sName.c_str()).x + H::Draw.Scale(14);
-							for (auto& [pTag, iID] : vTags)
-								flBarWidth += FCalcTextSize(pTag->m_sName.c_str()).x + H::Draw.Scale(iID ? 29 : 14);
-							flBarWidth = std::min(flBarWidth, std::max(flWidth - FCalcTextSize(tPlayer.m_sName.c_str(), F::Render.FontRegular).x - H::Draw.Scale(bIcon ? 33 : 14), flWidth / 2));
-
-							SetCursorPos(vOriginalPos + ImVec2(flWidth - floorf(flBarWidth), 0));
-							if (BeginChild(std::format("TagBar{}", tPlayer.m_iUserID).c_str(), { flBarWidth, flHeight }, ImGuiWindowFlags_None, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoBackground))
+							}
+							for (auto& iID : F::PlayerUtils.GetPlayerTags(tPlayer.m_uAccountID))
 							{
-								const auto vDrawPos = GetDrawPos();
-								float flTagOffset = H::Draw.Scale(4);
-								auto fDrawTag = [&](PriorityLabel_t& tTag, int iID)
-								{
-									ImColor tTagColor = ColorToVec(tTag.m_tColor);
-									float flTagWidth = FCalcTextSize(tTag.m_sName.c_str()).x + H::Draw.Scale(!iID ? 10 : 25);
-									float flTagHeight = H::Draw.Scale(20);
-									ImVec2 vTagPos = { flTagOffset, H::Draw.Scale(4) };
+								if (auto pTag = F::PlayerUtils.GetTag(iID))
+									vTags.emplace_back(pTag, iID);
+							}
 
-									GetWindowDrawList()->AddRectFilled(vDrawPos + vTagPos, vDrawPos + vTagPos + ImVec2(flTagWidth, flTagHeight), tTagColor, H::Draw.Scale(4));
-									SetCursorPos(vTagPos + ImVec2(H::Draw.Scale(5), H::Draw.Scale(3)));
-									TextColored(VecToColor(tColor).Blend(tTag.m_tColor).IsColorBright() ? ImVec4(0, 0, 0, 1) : ImVec4(1, 1, 1, 1), tTag.m_sName.c_str());
-									if (iID)
-									{
-										SetCursorPos(vTagPos + ImVec2(flTagWidth - H::Draw.Scale(22), H::Draw.Scale(-2)));
-										if (IconButton(ICON_MD_CANCEL))
-											F::PlayerUtils.RemoveTag(tPlayer.m_uAccountID, iID, true, tPlayer.m_sName.c_str());
-									}
-
-									flTagOffset += flTagWidth + H::Draw.Scale(4);
-								};
-
+							if (!vLabels.empty() || !vTags.empty())
+							{
+								PushFont(F::Render.FontSmall);
+								flBarWidth = H::Draw.Scale(4);
 								for (auto& tTag : vLabels)
-									fDrawTag(tTag, 0);
+									flBarWidth += FCalcTextSize(tTag.m_sName.c_str()).x + H::Draw.Scale(14);
 								for (auto& [pTag, iID] : vTags)
-									fDrawTag(*pTag, iID);
-								SetCursorPosX(flTagOffset); DebugDummy({});
-							} EndChild();
-							PopFont();
+									flBarWidth += FCalcTextSize(pTag->m_sName.c_str()).x + H::Draw.Scale(iID ? 29 : 14);
+								flBarWidth = std::min(flBarWidth, std::max(flWidth - FCalcTextSize(tPlayer.m_sName.c_str(), F::Render.FontRegular).x - H::Draw.Scale(bIcon ? 33 : 14), flWidth / 2));
 
-							bPopup = IsItemHovered() && IsMouseReleased(ImGuiMouseButton_Right);
-						}
-					}
-
-					// text + icons
-					int lOffset = H::Draw.Scale(10);
-					if (bIcon)
-					{
-						lOffset += H::Draw.Scale(19);
-						SetCursorPos(vOriginalPos + ImVec2(H::Draw.Scale(7), H::Draw.Scale(6)));
-						if (tPlayer.m_bLocal)
-							IconImage(ICON_MD_PERSON);
-						else if (F::Spectate.GetTarget(true) == tPlayer.m_iUserID)
-							IconImage(ICON_MD_VISIBILITY);
-						else if (tPlayer.m_bFriend)
-							IconImage(ICON_MD_GROUP);
-						else if (tPlayer.m_bParty)
-							IconImage(ICON_MD_GROUPS);
-					}
-					SetCursorPos(vOriginalPos + ImVec2(lOffset, H::Draw.Scale(7)));
-					auto sName = TruncateText(tPlayer.m_sName, flWidth - lOffset - flBarWidth);
-					FText(sName.c_str());
-					lOffset += FCalcTextSize(sName.c_str()).x + H::Draw.Scale(8);
-
-					// buttons
-					SetCursorPos(vOriginalPos);
-					Button(std::format("##{}", tPlayer.m_iUserID).c_str(), { flWidth, flHeight });
-					bPopup |= IsItemHovered() && IsMouseReleased(ImGuiMouseButton_Right);
-
-					// popups
-					if (bPopup)
-						OpenPopup(std::format("RightClicked{}", tPlayer.m_iUserID).c_str());
-
-					if (FBeginPopup(std::format("RightClicked{}", tPlayer.m_iUserID).c_str()))
-					{
-						PushStyleVar(ImGuiStyleVar_ItemSpacing, { H::Draw.Scale(8), H::Draw.Scale(8) });
-
-						if (!tPlayer.m_bFake)
-						{
-							if (FSelectable("Profile"))
-								I::SteamFriends->ActivateGameOverlayToUser("steamid", CSteamID(tPlayer.m_uAccountID, k_EUniversePublic, k_EAccountTypeIndividual));
-							if (FSelectable("History"))
-								I::SteamFriends->ActivateGameOverlayToWebPage(std::format("https://steamhistory.net/id/{}", CSteamID(tPlayer.m_uAccountID, k_EUniversePublic, k_EAccountTypeIndividual).ConvertToUint64()).c_str());
-						}
-
-						if (FSelectable(F::Spectate.GetTarget(true) == tPlayer.m_iUserID ? "Unspectate" : "Spectate"))
-							F::Spectate.SetTarget(tPlayer.m_iUserID);
-
-						if (!I::EngineClient->IsPlayingDemo() && FBeginMenu("Votekick"))
-						{
-							if (IsItemHovered() && IsMouseDown(ImGuiMouseButton_Left))
-							{
-								I::ClientState->SendStringCmd(std::format("callvote Kick \"{}\"", tPlayer.m_iUserID).c_str());
-								CloseCurrentPopup();
-							}
-							if (FSelectable("No reason"))
-								I::ClientState->SendStringCmd(std::format("callvote Kick \"{} other\"", tPlayer.m_iUserID).c_str());
-							if (FSelectable("Cheating"))
-								I::ClientState->SendStringCmd(std::format("callvote Kick \"{} cheating\"", tPlayer.m_iUserID).c_str());
-							if (FSelectable("Idle"))
-								I::ClientState->SendStringCmd(std::format("callvote Kick \"{} idle\"", tPlayer.m_iUserID).c_str());
-							if (FSelectable("Scamming"))
-								I::ClientState->SendStringCmd(std::format("callvote Kick \"{} scamming\"", tPlayer.m_iUserID).c_str());
-
-							ImGui::EndMenu();
-						}
-
-						if (!tPlayer.m_bFake)
-						{
-							if (FBeginMenu("Add tag"))
-							{
-								for (auto it = F::PlayerUtils.m_vTags.begin(); it != F::PlayerUtils.m_vTags.end(); it++)
+								SetCursorPos(vOriginalPos + ImVec2(flWidth - floorf(flBarWidth), 0));
+								if (BeginChild(std::format("TagBar{}", tPlayer.m_iUserID).c_str(), { flBarWidth, flHeight }, ImGuiWindowFlags_None, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoBackground))
 								{
-									int iID = std::distance(F::PlayerUtils.m_vTags.begin(), it);
-									auto& tTag = *it;
-									if (!tTag.m_bAssignable || F::PlayerUtils.HasTag(tPlayer.m_uAccountID, iID))
-										continue;
-
-									auto imColor = ColorToVec(tTag.m_tColor);
-									PushStyleColor(ImGuiCol_Text, imColor);
-									imColor.x /= 3; imColor.y /= 3; imColor.z /= 3;
-									if (FSelectable(tTag.m_sName.c_str(), imColor))
-										F::PlayerUtils.AddTag(tPlayer.m_uAccountID, iID, true, tPlayer.m_sName.c_str());
-									PopStyleColor();
-								}
-
-								ImGui::EndMenu();
-							}
-							if (FBeginMenu("Alias"))
-							{
-								bool bHasAlias = F::PlayerUtils.m_mPlayerAliases.contains(tPlayer.m_uAccountID);
-								static std::string sInput = "";
-
-								bool bEnter = FInputText("Alias...", sInput, H::Draw.Scale(150), ImGuiInputTextFlags_EnterReturnsTrue);
-								if (!IsItemFocused())
-									sInput = bHasAlias ? F::PlayerUtils.m_mPlayerAliases[tPlayer.m_uAccountID] : "";
-								if (bEnter)
-								{
-									if (sInput.empty() && bHasAlias)
-									{
-										F::Output.AliasChanged(tPlayer.m_sName.c_str(), "Removed", F::PlayerUtils.m_mPlayerAliases[tPlayer.m_uAccountID].c_str());
-
-										F::PlayerUtils.m_mPlayerAliases.erase(tPlayer.m_uAccountID);
-										F::PlayerUtils.m_bSave = true;
-									}
-									else if (!sInput.empty())
-									{
-										F::PlayerUtils.m_mPlayerAliases[tPlayer.m_uAccountID] = sInput;
-										F::PlayerUtils.m_bSave = true;
-
-										F::Output.AliasChanged(tPlayer.m_sName.c_str(), bHasAlias ? "Changed" : "Added", sInput.c_str());
-									}
-								}
-
-								ImGui::EndMenu();
-							}
-						}
-
-						if (Vars::Resolver::Enabled.Value && !tPlayer.m_bLocal && !I::EngineClient->IsPlayingDemo())
-						{
-							if (FBeginMenu("Set yaw"))
-							{
-								static std::vector<std::pair<const char*, float>> vYaws = {
-									{ "Auto", 0.f },
-									{ "Forward", 0.f },
-									{ "Left", 90.f },
-									{ "Right", -90.f },
-									{ "Backwards", 180.f }
-								};
-								for (auto& [sYaw, flValue] : vYaws)
-								{
-									if (FSelectable(sYaw))
-									{
-										switch (FNV1A::Hash32(sYaw))
+									const auto vDrawPos = GetDrawPos();
+									float flTagOffset = H::Draw.Scale(4);
+									auto fDrawTag = [&](PriorityLabel_t& tTag, int iID)
 										{
-										case FNV1A::Hash32Const("Auto"):
-											F::Resolver.SetYaw(tPlayer.m_iUserID, 0.f, true);
-											break;
-										default:
-											F::Resolver.SetYaw(tPlayer.m_iUserID, flValue);
+											ImColor tTagColor = ColorToVec(tTag.m_tColor);
+											float flTagWidth = FCalcTextSize(tTag.m_sName.c_str()).x + H::Draw.Scale(!iID ? 10 : 25);
+											float flTagHeight = H::Draw.Scale(20);
+											ImVec2 vTagPos = { flTagOffset, H::Draw.Scale(4) };
+
+											GetWindowDrawList()->AddRectFilled(vDrawPos + vTagPos, vDrawPos + vTagPos + ImVec2(flTagWidth, flTagHeight), tTagColor, H::Draw.Scale(4));
+											SetCursorPos(vTagPos + ImVec2(H::Draw.Scale(5), H::Draw.Scale(3)));
+											TextColored(VecToColor(tColor).Blend(tTag.m_tColor).IsColorBright() ? ImVec4(0, 0, 0, 1) : ImVec4(1, 1, 1, 1), tTag.m_sName.c_str());
+											if (iID)
+											{
+												SetCursorPos(vTagPos + ImVec2(flTagWidth - H::Draw.Scale(22), H::Draw.Scale(-2)));
+												if (IconButton(ICON_MD_CANCEL))
+													F::PlayerUtils.RemoveTag(tPlayer.m_uAccountID, iID, true, tPlayer.m_sName.c_str());
+											}
+
+											flTagOffset += flTagWidth + H::Draw.Scale(4);
+										};
+
+									for (auto& tTag : vLabels)
+										fDrawTag(tTag, 0);
+									for (auto& [pTag, iID] : vTags)
+										fDrawTag(*pTag, iID);
+									SetCursorPosX(flTagOffset); DebugDummy({});
+								} EndChild();
+								PopFont();
+
+								bPopup = IsItemHovered() && IsMouseReleased(ImGuiMouseButton_Right);
+							}
+						}
+
+						// text + icons
+						int lOffset = H::Draw.Scale(10);
+						if (bIcon)
+						{
+							lOffset += H::Draw.Scale(19);
+							SetCursorPos(vOriginalPos + ImVec2(H::Draw.Scale(7), H::Draw.Scale(6)));
+							if (tPlayer.m_bLocal)
+								IconImage(ICON_MD_PERSON);
+							else if (F::Spectate.GetTarget(true) == tPlayer.m_iUserID)
+								IconImage(ICON_MD_VISIBILITY);
+							else if (tPlayer.m_bFriend)
+								IconImage(ICON_MD_GROUP);
+							else if (tPlayer.m_bParty)
+								IconImage(ICON_MD_GROUPS);
+						}
+						SetCursorPos(vOriginalPos + ImVec2(lOffset, H::Draw.Scale(7)));
+						auto sName = TruncateText(tPlayer.m_sName, flWidth - lOffset - flBarWidth);
+						FText(sName.c_str());
+						lOffset += FCalcTextSize(sName.c_str()).x + H::Draw.Scale(8);
+
+						// buttons
+						SetCursorPos(vOriginalPos);
+						Button(std::format("##{}", tPlayer.m_iUserID).c_str(), { flWidth, flHeight });
+						bPopup |= IsItemHovered() && IsMouseReleased(ImGuiMouseButton_Right);
+
+						// popups
+						if (bPopup)
+							OpenPopup(std::format("RightClicked{}", tPlayer.m_iUserID).c_str());
+
+						if (FBeginPopup(std::format("RightClicked{}", tPlayer.m_iUserID).c_str()))
+						{
+							PushStyleVar(ImGuiStyleVar_ItemSpacing, { H::Draw.Scale(8), H::Draw.Scale(8) });
+
+							if (!tPlayer.m_bFake)
+							{
+								if (FSelectable("Profile"))
+									I::SteamFriends->ActivateGameOverlayToUser("steamid", CSteamID(tPlayer.m_uAccountID, k_EUniversePublic, k_EAccountTypeIndividual));
+								if (FSelectable("History"))
+									I::SteamFriends->ActivateGameOverlayToWebPage(std::format("https://steamhistory.net/id/{}", CSteamID(tPlayer.m_uAccountID, k_EUniversePublic, k_EAccountTypeIndividual).ConvertToUint64()).c_str());
+							}
+
+							if (FSelectable(F::Spectate.GetTarget(true) == tPlayer.m_iUserID ? "Unspectate" : "Spectate"))
+								F::Spectate.SetTarget(tPlayer.m_iUserID);
+
+							if (!I::EngineClient->IsPlayingDemo() && FBeginMenu("Votekick"))
+							{
+								if (IsItemHovered() && IsMouseDown(ImGuiMouseButton_Left))
+								{
+									I::ClientState->SendStringCmd(std::format("callvote Kick \"{}\"", tPlayer.m_iUserID).c_str());
+									CloseCurrentPopup();
+								}
+								if (FSelectable("No reason"))
+									I::ClientState->SendStringCmd(std::format("callvote Kick \"{} other\"", tPlayer.m_iUserID).c_str());
+								if (FSelectable("Cheating"))
+									I::ClientState->SendStringCmd(std::format("callvote Kick \"{} cheating\"", tPlayer.m_iUserID).c_str());
+								if (FSelectable("Idle"))
+									I::ClientState->SendStringCmd(std::format("callvote Kick \"{} idle\"", tPlayer.m_iUserID).c_str());
+								if (FSelectable("Scamming"))
+									I::ClientState->SendStringCmd(std::format("callvote Kick \"{} scamming\"", tPlayer.m_iUserID).c_str());
+
+								ImGui::EndMenu();
+							}
+
+							if (!tPlayer.m_bFake)
+							{
+								if (FBeginMenu("Add tag"))
+								{
+									for (auto it = F::PlayerUtils.m_vTags.begin(); it != F::PlayerUtils.m_vTags.end(); it++)
+									{
+										int iID = std::distance(F::PlayerUtils.m_vTags.begin(), it);
+										auto& tTag = *it;
+										if (!tTag.m_bAssignable || F::PlayerUtils.HasTag(tPlayer.m_uAccountID, iID))
+											continue;
+
+										auto imColor = ColorToVec(tTag.m_tColor);
+										PushStyleColor(ImGuiCol_Text, imColor);
+										imColor.x /= 3; imColor.y /= 3; imColor.z /= 3;
+										if (FSelectable(tTag.m_sName.c_str(), imColor))
+											F::PlayerUtils.AddTag(tPlayer.m_uAccountID, iID, true, tPlayer.m_sName.c_str());
+										PopStyleColor();
+									}
+
+									ImGui::EndMenu();
+								}
+								if (FBeginMenu("Alias"))
+								{
+									bool bHasAlias = F::PlayerUtils.m_mPlayerAliases.contains(tPlayer.m_uAccountID);
+									static std::string sInput = "";
+
+									bool bEnter = FInputText("Alias...", sInput, H::Draw.Scale(150), ImGuiInputTextFlags_EnterReturnsTrue);
+									if (!IsItemFocused())
+										sInput = bHasAlias ? F::PlayerUtils.m_mPlayerAliases[tPlayer.m_uAccountID] : "";
+									if (bEnter)
+									{
+										if (sInput.empty() && bHasAlias)
+										{
+											F::Output.AliasChanged(tPlayer.m_sName.c_str(), "Removed", F::PlayerUtils.m_mPlayerAliases[tPlayer.m_uAccountID].c_str());
+
+											F::PlayerUtils.m_mPlayerAliases.erase(tPlayer.m_uAccountID);
+											F::PlayerUtils.m_bSave = true;
+										}
+										else if (!sInput.empty())
+										{
+											F::PlayerUtils.m_mPlayerAliases[tPlayer.m_uAccountID] = sInput;
+											F::PlayerUtils.m_bSave = true;
+
+											F::Output.AliasChanged(tPlayer.m_sName.c_str(), bHasAlias ? "Changed" : "Added", sInput.c_str());
 										}
 									}
-								}
 
-								ImGui::EndMenu();
+									ImGui::EndMenu();
+								}
 							}
-							if (FBeginMenu("Set pitch"))
+
+							if (Vars::Resolver::Enabled.Value && !tPlayer.m_bLocal && !I::EngineClient->IsPlayingDemo())
 							{
-								static std::vector<std::pair<const char*, float>> vPitches = {
-									{ "Auto", 0.f },
-									{ "Up", -90.f },
-									{ "Down", 90.f },
-									{ "Zero", 0.f },
-									{ "Inverse", 0.f }
-								};
-								for (auto& [sPitch, flValue] : vPitches)
+								if (FBeginMenu("Set yaw"))
 								{
-									if (FSelectable(sPitch))
+									static std::vector<std::pair<const char*, float>> vYaws = {
+										{ "Auto", 0.f },
+										{ "Forward", 0.f },
+										{ "Left", 90.f },
+										{ "Right", -90.f },
+										{ "Backwards", 180.f }
+									};
+									for (auto& [sYaw, flValue] : vYaws)
 									{
-										switch (FNV1A::Hash32(sPitch))
+										if (FSelectable(sYaw))
 										{
-										case FNV1A::Hash32Const("Auto"):
-											F::Resolver.SetPitch(tPlayer.m_iUserID, 0.f, false, true);
-											break;
-										case FNV1A::Hash32Const("Inverse"):
-											F::Resolver.SetPitch(tPlayer.m_iUserID, 0.f, true);
-											break;
-										default:
-											F::Resolver.SetPitch(tPlayer.m_iUserID, flValue);
+											switch (FNV1A::Hash32(sYaw))
+											{
+											case FNV1A::Hash32Const("Auto"):
+												F::Resolver.SetYaw(tPlayer.m_iUserID, 0.f, true);
+												break;
+											default:
+												F::Resolver.SetYaw(tPlayer.m_iUserID, flValue);
+											}
 										}
 									}
-								}
 
-								ImGui::EndMenu();
-							}
-							if (FBeginMenu("Set view"))
-							{
-								static std::vector<std::pair<const char*, bool>> vPitches = {
-									{ "Offset from static view", true },
-									{ "Offset from view to local", false }
-								};
-								for (auto& [sPitch, bValue] : vPitches)
+									ImGui::EndMenu();
+								}
+								if (FBeginMenu("Set pitch"))
 								{
-									if (FSelectable(sPitch))
-										F::Resolver.SetView(tPlayer.m_iUserID, bValue);
-								}
+									static std::vector<std::pair<const char*, float>> vPitches = {
+										{ "Auto", 0.f },
+										{ "Up", -90.f },
+										{ "Down", 90.f },
+										{ "Zero", 0.f },
+										{ "Inverse", 0.f }
+									};
+									for (auto& [sPitch, flValue] : vPitches)
+									{
+										if (FSelectable(sPitch))
+										{
+											switch (FNV1A::Hash32(sPitch))
+											{
+											case FNV1A::Hash32Const("Auto"):
+												F::Resolver.SetPitch(tPlayer.m_iUserID, 0.f, false, true);
+												break;
+											case FNV1A::Hash32Const("Inverse"):
+												F::Resolver.SetPitch(tPlayer.m_iUserID, 0.f, true);
+												break;
+											default:
+												F::Resolver.SetPitch(tPlayer.m_iUserID, flValue);
+											}
+										}
+									}
 
-								ImGui::EndMenu();
-							}
-							if (FBeginMenu("Set minwalk"))
-							{
-								static std::vector<std::pair<const char*, bool>> vPitches = {
-									{ "Minwalk on", true },
-									{ "Minwalk off", false }
-								};
-								for (auto& [sPitch, bValue] : vPitches)
+									ImGui::EndMenu();
+								}
+								if (FBeginMenu("Set view"))
 								{
-									if (FSelectable(sPitch))
-										F::Resolver.SetMinwalk(tPlayer.m_iUserID, bValue);
+									static std::vector<std::pair<const char*, bool>> vPitches = {
+										{ "Offset from static view", true },
+										{ "Offset from view to local", false }
+									};
+									for (auto& [sPitch, bValue] : vPitches)
+									{
+										if (FSelectable(sPitch))
+											F::Resolver.SetView(tPlayer.m_iUserID, bValue);
+									}
+
+									ImGui::EndMenu();
 								}
+								if (FBeginMenu("Set minwalk"))
+								{
+									static std::vector<std::pair<const char*, bool>> vPitches = {
+										{ "Minwalk on", true },
+										{ "Minwalk off", false }
+									};
+									for (auto& [sPitch, bValue] : vPitches)
+									{
+										if (FSelectable(sPitch))
+											F::Resolver.SetMinwalk(tPlayer.m_iUserID, bValue);
+									}
 
-								ImGui::EndMenu();
+									ImGui::EndMenu();
+								}
 							}
-						}
 
-						if (mParties.contains(tPlayer.m_iParty))
-						{
-							Divider(H::Draw.Scale(1), 0);
-
-							TextColored(F::Render.Inactive.Value, "Partied:");
-							for (auto& pPlayer2 : mParties[tPlayer.m_iParty])
-								TextColored(F::Render.Inactive.Value, pPlayer2->m_sName.c_str());
-						}
-
-						if (tPlayer.m_iLevel != -2)
-						{
-							Divider(H::Draw.Scale(1), 0);
-
-							std::string sLevel = "T? L?";
-							if (tPlayer.m_iLevel != -1)
+							if (mParties.contains(tPlayer.m_iParty))
 							{
-								int iTier = std::max(ceilf(tPlayer.m_iLevel / 150.f), 1.f);
-								int iLevel = ((tPlayer.m_iLevel - 1) % 150) + 1;
-								sLevel = std::format("T{} L{}", iTier, iLevel);
-							}
-							TextColored(F::Render.Inactive.Value, sLevel.c_str());
-						}
+								Divider(H::Draw.Scale(1), 0);
 
-						PopStyleVar();
-						EndPopup();
-					}
-				};
+								TextColored(F::Render.Inactive.Value, "Partied:");
+								for (auto& pPlayer2 : mParties[tPlayer.m_iParty])
+									TextColored(F::Render.Inactive.Value, pPlayer2->m_sName.c_str());
+							}
+
+							if (tPlayer.m_iLevel != -2)
+							{
+								Divider(H::Draw.Scale(1), 0);
+
+								std::string sLevel = "T? L?";
+								if (tPlayer.m_iLevel != -1)
+								{
+									int iTier = std::max(ceilf(tPlayer.m_iLevel / 150.f), 1.f);
+									int iLevel = ((tPlayer.m_iLevel - 1) % 150) + 1;
+									sLevel = std::format("T{} L{}", iTier, iLevel);
+								}
+								TextColored(F::Render.Inactive.Value, sLevel.c_str());
+							}
+
+							PopStyleVar();
+							EndPopup();
+						}
+					};
 
 				// display players
 				std::vector<ListPlayer> vBlu, vRed, vOther;
@@ -1903,155 +1908,155 @@ void CMenu::MenuLogs(int iTab)
 			} EndChild();
 
 			auto fDrawTag = [](std::vector<PriorityLabel_t>::iterator it, PriorityLabel_t& _tTag, int y)
-			{
-				int _iID = std::distance(F::PlayerUtils.m_vTags.begin(), it);
-
-				ImVec2 vOriginalPos = { !_tTag.m_bLabel ? GetStyle().WindowPadding.x : GetWindowWidth() * 2 / 3 + GetStyle().WindowPadding.x / 2, H::Draw.Scale(96 + 36 * y) };
-
-				// background
-				float flWidth = GetWindowWidth() * (_tTag.m_bLabel ? 1.f / 3 : 2.f / 3) - GetStyle().WindowPadding.x * 1.5f;
-				float flHeight = H::Draw.Scale(28);
-				ImColor tColor = ColorToVec(_tTag.m_tColor.Lerp(Vars::Menu::Theme::Background.Value, 0.5f, LerpEnum::NoAlpha));
-				ImVec2 vDrawPos = GetDrawPos() + vOriginalPos;
-				if (iID != _iID)
-					GetWindowDrawList()->AddRectFilled(vDrawPos, vDrawPos + ImVec2(flWidth, flHeight), tColor, H::Draw.Scale(4));
-				else
 				{
-					ImColor tColor2 = { tColor.Value.x * 1.1f, tColor.Value.y * 1.1f, tColor.Value.z * 1.1f, tColor.Value.w };
-					GetWindowDrawList()->AddRectFilled(vDrawPos, vDrawPos + ImVec2(flWidth, flHeight), tColor2, H::Draw.Scale(4));
+					int _iID = std::distance(F::PlayerUtils.m_vTags.begin(), it);
 
-					tColor2 = ColorToVec(_tTag.m_tColor.Lerp(Vars::Menu::Theme::Background.Value, 0.25f, LerpEnum::NoAlpha));
-					float flInset = H::Draw.Scale(0.5f) - 0.5f;
-					GetWindowDrawList()->AddRect(vDrawPos + ImVec2(flInset, flInset), vDrawPos + ImVec2(flWidth - flInset, flHeight - flInset), tColor2, H::Draw.Scale(4), ImDrawFlags_None, H::Draw.Scale());
-				}
+					ImVec2 vOriginalPos = { !_tTag.m_bLabel ? GetStyle().WindowPadding.x : GetWindowWidth() * 2 / 3 + GetStyle().WindowPadding.x / 2, H::Draw.Scale(96 + 36 * y) };
 
-				// text
-				SetCursorPos(vOriginalPos + ImVec2(H::Draw.Scale(9), H::Draw.Scale(7)));
-				FText(TruncateText(_tTag.m_sName, _tTag.m_bLabel ? flWidth - H::Draw.Scale(38) : flWidth / 2 - H::Draw.Scale(20)).c_str());
-
-				if (!_tTag.m_bLabel)
-				{
-					SetCursorPos(vOriginalPos + ImVec2(flWidth / 2, H::Draw.Scale(7)));
-					FText(std::format("{}", _tTag.m_iPriority).c_str());
-				}
-
-				// buttons / icons
-				bool bDelete = false;
-				if (!_tTag.m_bLocked)
-				{
-					SetCursorPos(vOriginalPos + ImVec2(flWidth - H::Draw.Scale(26), H::Draw.Scale(2)));
-					bDelete = IconButton(ICON_MD_DELETE);
-				}
-				else
-				{
-					SetCursorPos(vOriginalPos + ImVec2(flWidth - H::Draw.Scale(22), H::Draw.Scale(6)));
-					switch (F::PlayerUtils.IndexToTag(_iID))
+					// background
+					float flWidth = GetWindowWidth() * (_tTag.m_bLabel ? 1.f / 3 : 2.f / 3) - GetStyle().WindowPadding.x * 1.5f;
+					float flHeight = H::Draw.Scale(28);
+					ImColor tColor = ColorToVec(_tTag.m_tColor.Lerp(Vars::Menu::Theme::Background.Value, 0.5f, LerpEnum::NoAlpha));
+					ImVec2 vDrawPos = GetDrawPos() + vOriginalPos;
+					if (iID != _iID)
+						GetWindowDrawList()->AddRectFilled(vDrawPos, vDrawPos + ImVec2(flWidth, flHeight), tColor, H::Draw.Scale(4));
+					else
 					{
-						//case DEFAULT_TAG: // no image
-					case IGNORED_TAG: IconImage(ICON_MD_DO_NOT_DISTURB); break;
-					case CHEATER_TAG: IconImage(ICON_MD_FLAG); break;
-					case FRIEND_TAG: IconImage(ICON_MD_GROUP); break;
-					case PARTY_TAG: IconImage(ICON_MD_GROUPS); break;
-					case F2P_TAG: IconImage(ICON_MD_MONEY_OFF); break;
+						ImColor tColor2 = { tColor.Value.x * 1.1f, tColor.Value.y * 1.1f, tColor.Value.z * 1.1f, tColor.Value.w };
+						GetWindowDrawList()->AddRectFilled(vDrawPos, vDrawPos + ImVec2(flWidth, flHeight), tColor2, H::Draw.Scale(4));
+
+						tColor2 = ColorToVec(_tTag.m_tColor.Lerp(Vars::Menu::Theme::Background.Value, 0.25f, LerpEnum::NoAlpha));
+						float flInset = H::Draw.Scale(0.5f) - 0.5f;
+						GetWindowDrawList()->AddRect(vDrawPos + ImVec2(flInset, flInset), vDrawPos + ImVec2(flWidth - flInset, flHeight - flInset), tColor2, H::Draw.Scale(4), ImDrawFlags_None, H::Draw.Scale());
 					}
-				}
 
-				SetCursorPos(vOriginalPos);
-				bool bClicked = Button(std::format("##{}", _tTag.m_sName).c_str(), { flWidth, flHeight });
-				bool bPopup = IsItemClicked(ImGuiMouseButton_Right);
+					// text
+					SetCursorPos(vOriginalPos + ImVec2(H::Draw.Scale(9), H::Draw.Scale(7)));
+					FText(TruncateText(_tTag.m_sName, _tTag.m_bLabel ? flWidth - H::Draw.Scale(38) : flWidth / 2 - H::Draw.Scale(20)).c_str());
 
-				if (bClicked)
-				{
-					iID = _iID;
-					tTag.m_sName = _tTag.m_sName;
-					tTag.m_tColor = _tTag.m_tColor;
-					tTag.m_iPriority = _tTag.m_iPriority;
-					tTag.m_bLabel = _tTag.m_bLabel;
-				}
-				else if (bPopup)
-					OpenPopup(std::format("RightClicked{}", _iID).c_str());
-				else if (bDelete)
-					OpenPopup(std::format("DeleteTag{}", _iID).c_str());
-
-				if (FBeginPopup(std::format("RightClicked{}", _iID).c_str()))
-				{
-					PushStyleVar(ImGuiStyleVar_ItemSpacing, { H::Draw.Scale(8), 0 });
-
-					auto& _tTag2 = *it;
-					bool bSave = false;
-
+					if (!_tTag.m_bLabel)
 					{
-						static std::string sInput = "";
+						SetCursorPos(vOriginalPos + ImVec2(flWidth / 2, H::Draw.Scale(7)));
+						FText(std::format("{}", _tTag.m_iPriority).c_str());
+					}
 
-						bool bEnter = FInputText("Name...", sInput, H::Draw.Scale(284), ImGuiInputTextFlags_EnterReturnsTrue);
-						if (!IsItemFocused())
-							sInput = _tTag2.m_sName;
-						if (bEnter)
+					// buttons / icons
+					bool bDelete = false;
+					if (!_tTag.m_bLocked)
+					{
+						SetCursorPos(vOriginalPos + ImVec2(flWidth - H::Draw.Scale(26), H::Draw.Scale(2)));
+						bDelete = IconButton(ICON_MD_DELETE);
+					}
+					else
+					{
+						SetCursorPos(vOriginalPos + ImVec2(flWidth - H::Draw.Scale(22), H::Draw.Scale(6)));
+						switch (F::PlayerUtils.IndexToTag(_iID))
 						{
-							_tTag2.m_sName = sInput;
-							bSave = true;
+							//case DEFAULT_TAG: // no image
+						case IGNORED_TAG: IconImage(ICON_MD_DO_NOT_DISTURB); break;
+						case CHEATER_TAG: IconImage(ICON_MD_FLAG); break;
+						case FRIEND_TAG: IconImage(ICON_MD_GROUP); break;
+						case PARTY_TAG: IconImage(ICON_MD_GROUPS); break;
+						case F2P_TAG: IconImage(ICON_MD_MONEY_OFF); break;
 						}
 					}
 
-					PushDisabled(_iID == DEFAULT_TAG || _iID == IGNORED_TAG);
+					SetCursorPos(vOriginalPos);
+					bool bClicked = Button(std::format("##{}", _tTag.m_sName).c_str(), { flWidth, flHeight });
+					bool bPopup = IsItemClicked(ImGuiMouseButton_Right);
+
+					if (bClicked)
 					{
-						int iLabel = Disabled ? 0 : _tTag2.m_bLabel;
-						if (FDropdown("Type##", &iLabel, { "Priority", "Label" }))
-							bSave = true;
-						_tTag2.m_bLabel = iLabel;
-						if (Disabled)
-							_tTag2.m_bLabel = false;
+						iID = _iID;
+						tTag.m_sName = _tTag.m_sName;
+						tTag.m_tColor = _tTag.m_tColor;
+						tTag.m_iPriority = _tTag.m_iPriority;
+						tTag.m_bLabel = _tTag.m_bLabel;
 					}
-					PopDisabled();
-					if (FSlider("Priority##", &_tTag2.m_iPriority, -10, 10))
-						bSave = true;
+					else if (bPopup)
+						OpenPopup(std::format("RightClicked{}", _iID).c_str());
+					else if (bDelete)
+						OpenPopup(std::format("DeleteTag{}", _iID).c_str());
 
-					if (bSave)
-						F::PlayerUtils.m_bSave = true;
-
-					PopStyleVar();
-					EndPopup();
-				}
-				else if (FBeginPopupModal(std::format("DeleteTag{}", _iID).c_str()))
-				{
-					FText(std::format("Do you really want to delete '{}'?", _tTag.m_sName).c_str());
-
-					if (FButton("Yes", FButtonEnum::Left))
+					if (FBeginPopup(std::format("RightClicked{}", _iID).c_str()))
 					{
-						F::PlayerUtils.m_vTags.erase(it);
-						F::PlayerUtils.m_bSave = F::PlayerUtils.m_bSave = true;
+						PushStyleVar(ImGuiStyleVar_ItemSpacing, { H::Draw.Scale(8), 0 });
 
-						for (auto& vTags : F::PlayerUtils.m_mPlayerTags | std::views::values)
+						auto& _tTag2 = *it;
+						bool bSave = false;
+
 						{
-							for (auto it = vTags.begin(); it != vTags.end();)
+							static std::string sInput = "";
+
+							bool bEnter = FInputText("Name...", sInput, H::Draw.Scale(284), ImGuiInputTextFlags_EnterReturnsTrue);
+							if (!IsItemFocused())
+								sInput = _tTag2.m_sName;
+							if (bEnter)
 							{
-								if (_iID == *it)
-									vTags.erase(it);
-								else
-								{
-									if (_iID < *it)
-										(*it)--;
-									it++;
-								}
+								_tTag2.m_sName = sInput;
+								bSave = true;
 							}
 						}
 
-						if (iID == _iID)
+						PushDisabled(_iID == DEFAULT_TAG || _iID == IGNORED_TAG);
 						{
-							iID = -1;
-							tTag = {};
+							int iLabel = Disabled ? 0 : _tTag2.m_bLabel;
+							if (FDropdown("Type##", &iLabel, { "Priority", "Label" }))
+								bSave = true;
+							_tTag2.m_bLabel = iLabel;
+							if (Disabled)
+								_tTag2.m_bLabel = false;
 						}
-						else if (iID > _iID)
-							iID--;
+						PopDisabled();
+						if (FSlider("Priority##", &_tTag2.m_iPriority, -10, 10))
+							bSave = true;
 
-						CloseCurrentPopup();
+						if (bSave)
+							F::PlayerUtils.m_bSave = true;
+
+						PopStyleVar();
+						EndPopup();
 					}
-					if (FButton("No", FButtonEnum::Right | FButtonEnum::SameLine))
-						CloseCurrentPopup();
+					else if (FBeginPopupModal(std::format("DeleteTag{}", _iID).c_str()))
+					{
+						FText(std::format("Do you really want to delete '{}'?", _tTag.m_sName).c_str());
 
-					EndPopup();
-				}
-			};
+						if (FButton("Yes", FButtonEnum::Left))
+						{
+							F::PlayerUtils.m_vTags.erase(it);
+							F::PlayerUtils.m_bSave = F::PlayerUtils.m_bSave = true;
+
+							for (auto& vTags : F::PlayerUtils.m_mPlayerTags | std::views::values)
+							{
+								for (auto it = vTags.begin(); it != vTags.end();)
+								{
+									if (_iID == *it)
+										vTags.erase(it);
+									else
+									{
+										if (_iID < *it)
+											(*it)--;
+										it++;
+									}
+								}
+							}
+
+							if (iID == _iID)
+							{
+								iID = -1;
+								tTag = {};
+							}
+							else if (iID > _iID)
+								iID--;
+
+							CloseCurrentPopup();
+						}
+						if (FButton("No", FButtonEnum::Right | FButtonEnum::SameLine))
+							CloseCurrentPopup();
+
+						EndPopup();
+					}
+				};
 
 			PushStyleColor(ImGuiCol_Text, F::Render.Inactive.Value);
 			SetCursorPos({ H::Draw.Scale(13), H::Draw.Scale(80) }); FText("Priorities");
@@ -2070,27 +2075,27 @@ void CMenu::MenuLogs(int iTab)
 			}
 
 			std::sort(vPriorities.begin(), vPriorities.end(), [&](const auto& a, const auto& b) -> bool
-			{
-				// override for default tag
-				if (std::distance(F::PlayerUtils.m_vTags.begin(), a.first) == DEFAULT_TAG)
-					return true;
-				if (std::distance(F::PlayerUtils.m_vTags.begin(), b.first) == DEFAULT_TAG)
-					return false;
+				{
+					// override for default tag
+					if (std::distance(F::PlayerUtils.m_vTags.begin(), a.first) == DEFAULT_TAG)
+						return true;
+					if (std::distance(F::PlayerUtils.m_vTags.begin(), b.first) == DEFAULT_TAG)
+						return false;
 
-				// sort by priority if unequal
-				if (a.second.m_iPriority != b.second.m_iPriority)
-					return a.second.m_iPriority > b.second.m_iPriority;
+					// sort by priority if unequal
+					if (a.second.m_iPriority != b.second.m_iPriority)
+						return a.second.m_iPriority > b.second.m_iPriority;
 
-				return a.second.m_sName < b.second.m_sName;
-			});
+					return a.second.m_sName < b.second.m_sName;
+				});
 			std::sort(vLabels.begin(), vLabels.end(), [&](const auto& a, const auto& b) -> bool
-			{
-				// sort by priority if unequal
-				if (a.second.m_iPriority != b.second.m_iPriority)
-					return a.second.m_iPriority > b.second.m_iPriority;
+				{
+					// sort by priority if unequal
+					if (a.second.m_iPriority != b.second.m_iPriority)
+						return a.second.m_iPriority > b.second.m_iPriority;
 
-				return a.second.m_sName < b.second.m_sName;
-			});
+					return a.second.m_sName < b.second.m_sName;
+				});
 
 			// display tags
 			int iPriorities = 0, iLabels = 0;
@@ -2517,7 +2522,7 @@ void CMenu::MenuSettings(int iTab)
 
 	switch (iTab)
 	{
-	// Settings
+		// Settings
 	case 0:
 	{
 		if (BeginTable("ConfigSettingsTable", 2))
@@ -2535,154 +2540,154 @@ void CMenu::MenuSettings(int iTab)
 			*/
 
 			auto fDrawConfigs = [](std::string& sStaticName, bool bVisual = false)
-			{
-				auto& sPath = !bVisual ? F::Configs.m_sConfigPath : F::Configs.m_sVisualsPath;
-				auto& sConfig = !bVisual ? F::Configs.m_sCurrentConfig : F::Configs.m_sCurrentVisuals;
-				auto sType = !bVisual ? "Config" : "Visual";
-				bool bNoSave = GetAsyncKeyState(VK_SHIFT) & 0x8000;
-
-				FSDropdown("Name", &sStaticName, {}, FSDropdownEnum::AutoUpdate, -H::Draw.Unscale(FCalcTextSize("CREATE").x + H::Draw.Scale(40)) - 44);
-				PushDisabled(sStaticName.empty());
 				{
-					if (FButton("Create", FButtonEnum::Fit | FButtonEnum::SameLine, { 0, 40 }))
+					auto& sPath = !bVisual ? F::Configs.m_sConfigPath : F::Configs.m_sVisualsPath;
+					auto& sConfig = !bVisual ? F::Configs.m_sCurrentConfig : F::Configs.m_sCurrentVisuals;
+					auto sType = !bVisual ? "Config" : "Visual";
+					bool bNoSave = GetAsyncKeyState(VK_SHIFT) & 0x8000;
+
+					FSDropdown("Name", &sStaticName, {}, FSDropdownEnum::AutoUpdate, -H::Draw.Unscale(FCalcTextSize("CREATE").x + H::Draw.Scale(40)) - 44);
+					PushDisabled(sStaticName.empty());
 					{
-						if (!std::filesystem::exists(sPath + sStaticName))
+						if (FButton("Create", FButtonEnum::Fit | FButtonEnum::SameLine, { 0, 40 }))
 						{
-							if (!bVisual)
-								F::Configs.SaveConfig(sStaticName);
-							else
-								F::Configs.SaveVisual(sStaticName);
+							if (!std::filesystem::exists(sPath + sStaticName))
+							{
+								if (!bVisual)
+									F::Configs.SaveConfig(sStaticName);
+								else
+									F::Configs.SaveVisual(sStaticName);
+							}
+							sStaticName.clear();
 						}
-						sStaticName.clear();
 					}
-				}
-				PopDisabled();
+					PopDisabled();
 
-				if (FButton(ICON_MD_FOLDER, FButtonEnum::Fit | FButtonEnum::SameLine, { 40, 40 }, 0, F::Render.IconFont))
-					ShellExecuteA(NULL, NULL, sPath.c_str(), NULL, NULL, SW_SHOWNORMAL);
+					if (FButton(ICON_MD_FOLDER, FButtonEnum::Fit | FButtonEnum::SameLine, { 40, 40 }, 0, F::Render.IconFont))
+						ShellExecuteA(NULL, NULL, sPath.c_str(), NULL, NULL, SW_SHOWNORMAL);
 
-				pRowSizes->clear();
+					pRowSizes->clear();
 
-				std::vector<std::pair<std::filesystem::directory_entry, std::string>> vConfigs = {};
-				bool bDefaultFound = false;
-				for (auto& tEntry : std::filesystem::directory_iterator(sPath))
-				{
-					if (!tEntry.is_regular_file() || tEntry.path().extension() != F::Configs.m_sConfigExtension)
-						continue;
-
-					std::string sName = tEntry.path().filename().string();
-					sName.erase(sName.end() - F::Configs.m_sConfigExtension.size(), sName.end());
-					if (FNV1A::Hash32(sName.c_str()) == FNV1A::Hash32Const("default"))
-						bDefaultFound = true;
-
-					vConfigs.emplace_back(tEntry, sName);
-				}
-				if (!bVisual)
-				{
-					if (!bDefaultFound)
-						F::Configs.SaveConfig("default");
-					std::sort(vConfigs.begin(), vConfigs.end(), [&](const auto& a, const auto& b) -> bool
+					std::vector<std::pair<std::filesystem::directory_entry, std::string>> vConfigs = {};
+					bool bDefaultFound = false;
+					for (auto& tEntry : std::filesystem::directory_iterator(sPath))
 					{
-						// override for default config
-						if (FNV1A::Hash32(a.second.c_str()) == FNV1A::Hash32Const("default"))
-							return true;
-						if (FNV1A::Hash32(b.second.c_str()) == FNV1A::Hash32Const("default"))
-							return false;
+						if (!tEntry.is_regular_file() || tEntry.path().extension() != F::Configs.m_sConfigExtension)
+							continue;
 
-						return a.second < b.second;
-					});
-				}
+						std::string sName = tEntry.path().filename().string();
+						sName.erase(sName.end() - F::Configs.m_sConfigExtension.size(), sName.end());
+						if (FNV1A::Hash32(sName.c_str()) == FNV1A::Hash32Const("default"))
+							bDefaultFound = true;
 
-				for (auto& [entry, sConfigName] : vConfigs)
-				{
-					bool bCurrentConfig = FNV1A::Hash32(sConfigName.c_str()) == FNV1A::Hash32(sConfig.c_str());
-					ImVec2 vOriginalPos = GetCursorPos();
-
-					SetCursorPos(vOriginalPos + ImVec2(H::Draw.Scale(2), H::Draw.Scale(9)));
-					bool bLoad = IconButton(bCurrentConfig ? ICON_MD_REFRESH : ICON_MD_DOWNLOAD);
-					FTooltip(ICON_MD_ADD ICON_MD_FILE_UPLOAD_OFF, bNoSave && IsItemHovered(), 300.f, F::Render.IconFont);
-
-					SetCursorPos({ H::Draw.Scale(43), vOriginalPos.y + H::Draw.Scale(14) });
-					TextColored(bCurrentConfig ? F::Render.Active.Value : F::Render.Inactive.Value, TruncateText(sConfigName, GetWindowWidth() - GetStyle().WindowPadding.x * 2 - H::Draw.Scale(80)).c_str());
-
-					int iOffset = 9;
-					SetCursorPos({ GetWindowWidth() - H::Draw.Scale(iOffset += 25), vOriginalPos.y + H::Draw.Scale(9) });
-					bool bDelete = IconButton(ICON_MD_DELETE);
-
-					SetCursorPos({ GetWindowWidth() - H::Draw.Scale(iOffset += 25), vOriginalPos.y + H::Draw.Scale(9) });
-					bool bSave = IconButton(ICON_MD_SAVE);
-					FTooltip(ICON_MD_ADD ICON_MD_FILE_DOWNLOAD_OFF, bNoSave && IsItemHovered(), 300.f, F::Render.IconFont);
-
-					if (bLoad)
-					{
-						if (!bVisual)
-							F::Configs.LoadConfig(sConfigName);
-						else
-							F::Configs.LoadVisual(sConfigName);
+						vConfigs.emplace_back(tEntry, sName);
 					}
-					else if (bSave)
+					if (!bVisual)
 					{
-						if (!bCurrentConfig || !bVisual && !F::Configs.m_sCurrentVisuals.empty())
-							OpenPopup(std::format("Save{}{}", sType, sConfigName).c_str());
-						else if (!bVisual)
-							F::Configs.SaveConfig(sConfigName);
-						else
-							F::Configs.SaveVisual(sConfigName);
+						if (!bDefaultFound)
+							F::Configs.SaveConfig("default");
+						std::sort(vConfigs.begin(), vConfigs.end(), [&](const auto& a, const auto& b) -> bool
+							{
+								// override for default config
+								if (FNV1A::Hash32(a.second.c_str()) == FNV1A::Hash32Const("default"))
+									return true;
+								if (FNV1A::Hash32(b.second.c_str()) == FNV1A::Hash32Const("default"))
+									return false;
+
+								return a.second < b.second;
+							});
 					}
-					else if (bDelete)
-						OpenPopup(std::format("Remove{}{}", sType, sConfigName).c_str());
 
-					if (FBeginPopupModal(std::format("Save{}{}", sType, sConfigName).c_str()))
+					for (auto& [entry, sConfigName] : vConfigs)
 					{
-						FText(std::format("Do you really want to override '{}'?", sConfigName).c_str());
+						bool bCurrentConfig = FNV1A::Hash32(sConfigName.c_str()) == FNV1A::Hash32(sConfig.c_str());
+						ImVec2 vOriginalPos = GetCursorPos();
 
-						if (FButton("Yes, override", FButtonEnum::Left))
+						SetCursorPos(vOriginalPos + ImVec2(H::Draw.Scale(2), H::Draw.Scale(9)));
+						bool bLoad = IconButton(bCurrentConfig ? ICON_MD_REFRESH : ICON_MD_DOWNLOAD);
+						FTooltip(ICON_MD_ADD ICON_MD_FILE_UPLOAD_OFF, bNoSave && IsItemHovered(), 300.f, F::Render.IconFont);
+
+						SetCursorPos({ H::Draw.Scale(43), vOriginalPos.y + H::Draw.Scale(14) });
+						TextColored(bCurrentConfig ? F::Render.Active.Value : F::Render.Inactive.Value, TruncateText(sConfigName, GetWindowWidth() - GetStyle().WindowPadding.x * 2 - H::Draw.Scale(80)).c_str());
+
+						int iOffset = 9;
+						SetCursorPos({ GetWindowWidth() - H::Draw.Scale(iOffset += 25), vOriginalPos.y + H::Draw.Scale(9) });
+						bool bDelete = IconButton(ICON_MD_DELETE);
+
+						SetCursorPos({ GetWindowWidth() - H::Draw.Scale(iOffset += 25), vOriginalPos.y + H::Draw.Scale(9) });
+						bool bSave = IconButton(ICON_MD_SAVE);
+						FTooltip(ICON_MD_ADD ICON_MD_FILE_DOWNLOAD_OFF, bNoSave && IsItemHovered(), 300.f, F::Render.IconFont);
+
+						if (bLoad)
 						{
 							if (!bVisual)
+								F::Configs.LoadConfig(sConfigName);
+							else
+								F::Configs.LoadVisual(sConfigName);
+						}
+						else if (bSave)
+						{
+							if (!bCurrentConfig || !bVisual && !F::Configs.m_sCurrentVisuals.empty())
+								OpenPopup(std::format("Save{}{}", sType, sConfigName).c_str());
+							else if (!bVisual)
 								F::Configs.SaveConfig(sConfigName);
 							else
 								F::Configs.SaveVisual(sConfigName);
-							CloseCurrentPopup();
 						}
-						if (FButton("No", FButtonEnum::Right | FButtonEnum::SameLine))
-							CloseCurrentPopup();
+						else if (bDelete)
+							OpenPopup(std::format("Remove{}{}", sType, sConfigName).c_str());
 
-						EndPopup();
-					}
-					else if (FBeginPopupModal(std::format("Remove{}{}", sType, sConfigName).c_str()))
-					{
-						FText(std::format("Do you really want to remove '{}'?", sConfigName).c_str());
-
-						PushDisabled(!bVisual && FNV1A::Hash32(sConfigName.c_str()) == FNV1A::Hash32Const("default"));
+						if (FBeginPopupModal(std::format("Save{}{}", sType, sConfigName).c_str()))
 						{
-							if (FButton("Yes, delete", FButtonEnum::Fit))
+							FText(std::format("Do you really want to override '{}'?", sConfigName).c_str());
+
+							if (FButton("Yes, override", FButtonEnum::Left))
 							{
 								if (!bVisual)
-									F::Configs.DeleteConfig(sConfigName);
+									F::Configs.SaveConfig(sConfigName);
 								else
-									F::Configs.DeleteVisual(sConfigName);
+									F::Configs.SaveVisual(sConfigName);
 								CloseCurrentPopup();
 							}
+							if (FButton("No", FButtonEnum::Right | FButtonEnum::SameLine))
+								CloseCurrentPopup();
+
+							EndPopup();
 						}
-						PopDisabled();
-						if (FButton("Yes, reset", FButtonEnum::Fit | FButtonEnum::SameLine))
+						else if (FBeginPopupModal(std::format("Remove{}{}", sType, sConfigName).c_str()))
 						{
-							if (!bVisual)
-								F::Configs.ResetConfig(sConfigName);
-							else
-								F::Configs.ResetVisual(sConfigName);
-							CloseCurrentPopup();
+							FText(std::format("Do you really want to remove '{}'?", sConfigName).c_str());
+
+							PushDisabled(!bVisual && FNV1A::Hash32(sConfigName.c_str()) == FNV1A::Hash32Const("default"));
+							{
+								if (FButton("Yes, delete", FButtonEnum::Fit))
+								{
+									if (!bVisual)
+										F::Configs.DeleteConfig(sConfigName);
+									else
+										F::Configs.DeleteVisual(sConfigName);
+									CloseCurrentPopup();
+								}
+							}
+							PopDisabled();
+							if (FButton("Yes, reset", FButtonEnum::Fit | FButtonEnum::SameLine))
+							{
+								if (!bVisual)
+									F::Configs.ResetConfig(sConfigName);
+								else
+									F::Configs.ResetVisual(sConfigName);
+								CloseCurrentPopup();
+							}
+							if (FButton("No", FButtonEnum::Fit | FButtonEnum::SameLine))
+								CloseCurrentPopup();
+
+							EndPopup();
 						}
-						if (FButton("No", FButtonEnum::Fit | FButtonEnum::SameLine))
-							CloseCurrentPopup();
 
-						EndPopup();
+						SetCursorPos(vOriginalPos); DebugDummy({ 0, H::Draw.Scale(28) });
 					}
-
-					SetCursorPos(vOriginalPos); DebugDummy({ 0, H::Draw.Scale(28) });
-				}
-				DebugDummy({ 0, H::Draw.Scale(7) });
-			};
+					DebugDummy({ 0, H::Draw.Scale(7) });
+				};
 
 			/* Column 1 */
 			TableNextColumn();
@@ -2806,38 +2811,38 @@ void CMenu::MenuSettings(int iTab)
 			PopStyleColor();
 
 			auto fNumberToIndex = [](int iNumber, int iLayer)
-			{
-				int iIndex = -1, i = -1;
-
-				std::unordered_mapset<int> mBinds = {};
-				std::function<void(int)> fGetBinds = [&](int iParent)
 				{
-					for (int _iBind = 0; _iBind < F::Binds.m_vBinds.size(); _iBind++)
-					{
-						auto& _tBind = F::Binds.m_vBinds[_iBind];
-						if (iParent != _tBind.m_iParent || mBinds.contains(_iBind))
-							continue;
+					int iIndex = -1, i = -1;
 
-						mBinds[_iBind];
+					std::unordered_mapset<int> mBinds = {};
+					std::function<void(int)> fGetBinds = [&](int iParent)
+						{
+							for (int _iBind = 0; _iBind < F::Binds.m_vBinds.size(); _iBind++)
+							{
+								auto& _tBind = F::Binds.m_vBinds[_iBind];
+								if (iParent != _tBind.m_iParent || mBinds.contains(_iBind))
+									continue;
 
-						i++;
-						//if (iParent == iLayer && iNumber >= i)
-						if (iIndex == -1 && iParent == iLayer && iNumber <= i)
-							iIndex = _iBind;
-						fGetBinds(_iBind);
-					}
+								mBinds[_iBind];
+
+								i++;
+								//if (iParent == iLayer && iNumber >= i)
+								if (iIndex == -1 && iParent == iLayer && iNumber <= i)
+									iIndex = _iBind;
+								fGetBinds(_iBind);
+							}
+						};
+					fGetBinds(DEFAULT_BIND);
+
+					return iIndex;
 				};
-				fGetBinds(DEFAULT_BIND);
-
-				return iIndex;
-			};
 			auto fPositionToIndex = [&](ImVec2 vPos, int iLayer = DEFAULT_BIND)
-			{
-				int iIndex = floorf((vPos.y - GetCursorPosY() - H::Draw.Scale(4)) / H::Draw.Scale(36));
-				iIndex = std::clamp(iIndex, 0, int(F::Binds.m_vBinds.size() - 1));
-				iIndex = fNumberToIndex(iIndex, iLayer);
-				return iIndex;
-			};
+				{
+					int iIndex = floorf((vPos.y - GetCursorPosY() - H::Draw.Scale(4)) / H::Draw.Scale(36));
+					iIndex = std::clamp(iIndex, 0, int(F::Binds.m_vBinds.size() - 1));
+					iIndex = fNumberToIndex(iIndex, iLayer);
+					return iIndex;
+				};
 
 			static int iDragging = -1, iLayer = DEFAULT_BIND;
 			if (!IsMouseDown(ImGuiMouseButton_Left))
@@ -2860,243 +2865,243 @@ void CMenu::MenuSettings(int iTab)
 
 			std::unordered_mapset<int> mBinds = {};
 			std::function<void(int, int)> fGetBinds = [&](int iParent, int x)
-			{
-				for (int _iBind = 0; _iBind < F::Binds.m_vBinds.size(); _iBind++)
 				{
-					auto& _tBind = F::Binds.m_vBinds[_iBind];
-					if (iParent != DEFAULT_BIND - 1 && iParent != _tBind.m_iParent || mBinds.contains(_iBind))
-						continue;
-
-					mBinds[_iBind];
-
-					std::string sType; std::string sInfo;
-					switch (_tBind.m_iType)
+					for (int _iBind = 0; _iBind < F::Binds.m_vBinds.size(); _iBind++)
 					{
-					case BindEnum::Key:
-						switch (_tBind.m_iInfo)
-						{
-						case BindEnum::KeyEnum::Hold: { sType = "hold"; break; }
-						case BindEnum::KeyEnum::Toggle: { sType = "toggle"; break; }
-						case BindEnum::KeyEnum::DoubleClick: { sType = "double"; break; }
-						}
-						sInfo = U::KeyHandler.String(_tBind.m_iKey);
-						break;
-					case BindEnum::Class:
-						sType = "class";
-						switch (_tBind.m_iInfo)
-						{
-						case BindEnum::ClassEnum::Scout: { sInfo = "scout"; break; }
-						case BindEnum::ClassEnum::Soldier: { sInfo = "soldier"; break; }
-						case BindEnum::ClassEnum::Pyro: { sInfo = "pyro"; break; }
-						case BindEnum::ClassEnum::Demoman: { sInfo = "demoman"; break; }
-						case BindEnum::ClassEnum::Heavy: { sInfo = "heavy"; break; }
-						case BindEnum::ClassEnum::Engineer: { sInfo = "engineer"; break; }
-						case BindEnum::ClassEnum::Medic: { sInfo = "medic"; break; }
-						case BindEnum::ClassEnum::Sniper: { sInfo = "sniper"; break; }
-						case BindEnum::ClassEnum::Spy: { sInfo = "spy"; break; }
-						}
-						break;
-					case BindEnum::WeaponType:
-						sType = "weapon";
-						switch (_tBind.m_iInfo)
-						{
-						case BindEnum::WeaponTypeEnum::Hitscan: { sInfo = "hitscan"; break; }
-						case BindEnum::WeaponTypeEnum::Projectile: { sInfo = "projectile"; break; }
-						case BindEnum::WeaponTypeEnum::Melee: { sInfo = "melee"; break; }
-						case BindEnum::WeaponTypeEnum::Throwable: { sInfo = "throwable"; break; }
-						}
-						break;
-					case BindEnum::ItemSlot:
-						sType = "slot";
-						sInfo = std::format("{}", _tBind.m_iInfo + 1);
-						break;
-					case BindEnum::Misc:
-						switch (_tBind.m_iInfo)
-						{
-						case BindEnum::MiscEnum::Spectated:
-						case BindEnum::MiscEnum::SpectatedFirst:
-						case BindEnum::MiscEnum::SpectatedThird:
-							sType = "spectated";
-							switch (_tBind.m_iInfo)
-							{
-							case BindEnum::MiscEnum::Spectated: { sInfo = "any"; break; }
-							case BindEnum::MiscEnum::SpectatedFirst: { sInfo = "1st"; break; }
-							case BindEnum::MiscEnum::SpectatedThird: { sInfo = "3rd"; break; }
-							}
-							break;
-						case BindEnum::MiscEnum::Zoomed:
-						case BindEnum::MiscEnum::Aiming:
-							sType = "cond";
-							switch (_tBind.m_iInfo)
-							{
-							case BindEnum::MiscEnum::Zoomed: { sInfo = "zoomed"; break; }
-							case BindEnum::MiscEnum::Aiming: { sInfo = "aiming"; break; }
-							}
-							break;
-						}
-						break;
-					}
-					if (_tBind.m_bNot && (_tBind.m_iType != BindEnum::Key || _tBind.m_iInfo == BindEnum::KeyEnum::Hold))
-						sType = std::format("not {}", sType);
+						auto& _tBind = F::Binds.m_vBinds[_iBind];
+						if (iParent != DEFAULT_BIND - 1 && iParent != _tBind.m_iParent || mBinds.contains(_iBind))
+							continue;
 
-					ImVec2 vOriginalPos = { H::Draw.Scale(8) + H::Draw.Scale(28) * std::min(x, 3), GetCursorPosY() + H::Draw.Scale(8) };
+						mBinds[_iBind];
 
-					// background
-					float flWidth = GetWindowWidth() - GetStyle().WindowPadding.x * 2 - H::Draw.Scale(28) * std::min(x, 3);
-					float flHeight = H::Draw.Scale(28);
-					ImVec2 vDrawPos = GetDrawPos() + vOriginalPos;
-					if (iBind != _iBind)
-						GetWindowDrawList()->AddRectFilled(vDrawPos, vDrawPos + ImVec2(flWidth, flHeight), F::Render.Background1p5, H::Draw.Scale(4));
-					else
-					{
-						ImColor tColor = F::Render.Background1p5L;
-						GetWindowDrawList()->AddRectFilled(vDrawPos, vDrawPos + ImVec2(flWidth, flHeight), tColor, H::Draw.Scale(4));
-
-						tColor = ColorToVec((VecToColor(F::Render.Background1p5)).Lerp({ 127, 127, 127 }, 1.f / 9, LerpEnum::NoAlpha));
-						float flInset = H::Draw.Scale(0.5f) - 0.5f;
-						GetWindowDrawList()->AddRect(vDrawPos + ImVec2(flInset, flInset), vDrawPos + ImVec2(flWidth - flInset, flHeight - flInset), tColor, H::Draw.Scale(4), ImDrawFlags_None, H::Draw.Scale());
-					}
-
-					// text
-					if (x > 3)
-					{	// don't indent too much
-						auto sText = std::format("-> {}", x);
-						SetCursorPos(vOriginalPos + ImVec2(-FCalcTextSize(sText.c_str()).x - H::Draw.Scale(10), H::Draw.Scale(7)));
-						PushStyleColor(ImGuiCol_Text, F::Render.Inactive.Value);
-						FText(sText.c_str());
-						PopStyleColor();
-					}
-
-					float flTextWidth = flWidth - H::Draw.Scale(127);
-					PushTransparent(!F::Binds.WillBeEnabled(_iBind), true);
-
-					SetCursorPos(vOriginalPos + ImVec2(H::Draw.Scale(9), H::Draw.Scale(7)));
-					PushStyleColor(ImGuiCol_Text, _tBind.m_bActive ? F::Render.Accent.Value : F::Render.Active.Value);
-					FText(TruncateText(_tBind.m_sName, flTextWidth * (1.f / 3) - H::Draw.Scale(20)).c_str());
-					PopStyleColor();
-
-					SetCursorPos(vOriginalPos + ImVec2(flTextWidth * (1.f / 3), H::Draw.Scale(7)));
-					FText(sType.c_str());
-
-					SetCursorPos(vOriginalPos + ImVec2(flTextWidth * (2.f / 3), H::Draw.Scale(7)));
-					FText(sInfo.c_str());
-
-					// buttons
-					int iOffset = 1;
-
-					SetCursorPos(vOriginalPos + ImVec2(flWidth - H::Draw.Scale(iOffset += 25), H::Draw.Scale(2)));
-					bool bDelete = IconButton(ICON_MD_DELETE);
-
-					SetCursorPos(vOriginalPos + ImVec2(flWidth - H::Draw.Scale(iOffset += 25), H::Draw.Scale(2)));
-					if (IconButton(ICON_MD_EDIT))
-						CurrentBind = CurrentBind != _iBind ? _iBind : DEFAULT_BIND;
-
-					SetCursorPos(vOriginalPos + ImVec2(flWidth - H::Draw.Scale(iOffset += 25), H::Draw.Scale(2)));
-					if (IconButton(!_tBind.m_bNot ? ICON_MD_CODE : ICON_MD_CODE_OFF))
-						_tBind.m_bNot = !_tBind.m_bNot;
-
-					PushTransparent(Transparent || _tBind.m_iVisibility == BindVisibilityEnum::Hidden, true);
-					SetCursorPos(vOriginalPos + ImVec2(flWidth - H::Draw.Scale(iOffset += 25), H::Draw.Scale(2)));
-					if (IconButton(_tBind.m_iVisibility == BindVisibilityEnum::Always ? ICON_MD_VISIBILITY : ICON_MD_VISIBILITY_OFF))
-						_tBind.m_iVisibility = (_tBind.m_iVisibility + 1) % 3;
-					PopTransparent(1, 1);
-
-					SetCursorPos(vOriginalPos + ImVec2(flWidth - H::Draw.Scale(iOffset += 25), H::Draw.Scale(2)));
-					if (IconButton(_tBind.m_bEnabled ? ICON_MD_TOGGLE_ON : ICON_MD_TOGGLE_OFF))
-						_tBind.m_bEnabled = !_tBind.m_bEnabled;
-
-					SetCursorPos(vOriginalPos);
-					bool bClicked = Button(std::format("##{}", _iBind).c_str(), { flWidth, flHeight });
-					bool bPopup = IsItemClicked(ImGuiMouseButton_Right);
-
-					PopTransparent(1, 1);
-
-					if (bClicked)
-					{
-						if (!bParent)
-						{
-							iBind = _iBind;
-							tBind = _tBind;
-						}
-						else
-						{
-							bParent = false;
-							tBind.m_iParent = _iBind;
-
-							// make sure bind can't be parented to itself or any of its children
-							int _iBind2 = _iBind;
-							Bind_t _tBind2;
-							while (F::Binds.GetBind(_iBind2, &_tBind2))
-							{
-								if (_iBind2 == iBind)
-									tBind.m_iParent = DEFAULT_BIND;
-								_iBind2 = _tBind2.m_iParent;
-							}
-						}
-					}
-					else if (bPopup)
-						OpenPopup(std::format("RightClicked{}", _iBind).c_str());
-					else if (iDragging == -1 && IsItemHovered() && IsMouseDown(ImGuiMouseButton_Left))
-						iDragging = _iBind, iLayer = iParent;
-					else if (bDelete)
-					{
-						if (_tBind.m_vVars.size() <= 1 && !F::Binds.HasChildren(_iBind) || U::KeyHandler.Down(VK_SHIFT)) // allow user to quickly remove binds
-							F::Binds.RemoveBind(_iBind);
-						else
-							OpenPopup(std::format("DeleteBind{}", _iBind).c_str());
-					}
-
-					if (FBeginPopup(std::format("RightClicked{}", _iBind).c_str()))
-					{
-						PushStyleVar(ImGuiStyleVar_ItemSpacing, { H::Draw.Scale(8), 0 });
-
-						{
-							static std::string sInput = "";
-
-							bool bEnter = FInputText("Name...", sInput, H::Draw.Scale(284), ImGuiInputTextFlags_EnterReturnsTrue);
-							if (!IsItemFocused())
-								sInput = _tBind.m_sName;
-							if (bEnter)
-								_tBind.m_sName = sInput;
-						}
-
-						FDropdown("Type", &_tBind.m_iType, { "Key", "Class", "Weapon type", "Item slot", "Misc" }, {}, FDropdownEnum::Left);
+						std::string sType; std::string sInfo;
 						switch (_tBind.m_iType)
 						{
-						case BindEnum::Key: FDropdown("Behavior", &_tBind.m_iInfo, { "Hold", "Toggle", "Double click" }, {}, FDropdownEnum::Right); break;
-						case BindEnum::Class: FDropdown("Class", &_tBind.m_iInfo, { "Scout", "Soldier", "Pyro", "Demoman", "Heavy", "Engineer", "Medic", "Sniper", "Spy" }, {}, FDropdownEnum::Right); break;
-						case BindEnum::WeaponType: FDropdown("Weapon type", &_tBind.m_iInfo, { "Hitscan", "Projectile", "Melee", "Throwable" }, {}, FDropdownEnum::Right); break;
-						case BindEnum::ItemSlot: FDropdown("Item slot", &_tBind.m_iInfo, { "1", "2", "3", "4", "5", "6", "7", "8", "9" }, {}, FDropdownEnum::Right); break;
-						case BindEnum::Misc: FDropdown("Misc", &_tBind.m_iInfo, { "Spectated", "Spectated 1st", "Spectated 3rd", "##Divider", "Zoomed", "Aiming" }, {}, FDropdownEnum::Right); break;
+						case BindEnum::Key:
+							switch (_tBind.m_iInfo)
+							{
+							case BindEnum::KeyEnum::Hold: { sType = "hold"; break; }
+							case BindEnum::KeyEnum::Toggle: { sType = "toggle"; break; }
+							case BindEnum::KeyEnum::DoubleClick: { sType = "double"; break; }
+							}
+							sInfo = U::KeyHandler.String(_tBind.m_iKey);
+							break;
+						case BindEnum::Class:
+							sType = "class";
+							switch (_tBind.m_iInfo)
+							{
+							case BindEnum::ClassEnum::Scout: { sInfo = "scout"; break; }
+							case BindEnum::ClassEnum::Soldier: { sInfo = "soldier"; break; }
+							case BindEnum::ClassEnum::Pyro: { sInfo = "pyro"; break; }
+							case BindEnum::ClassEnum::Demoman: { sInfo = "demoman"; break; }
+							case BindEnum::ClassEnum::Heavy: { sInfo = "heavy"; break; }
+							case BindEnum::ClassEnum::Engineer: { sInfo = "engineer"; break; }
+							case BindEnum::ClassEnum::Medic: { sInfo = "medic"; break; }
+							case BindEnum::ClassEnum::Sniper: { sInfo = "sniper"; break; }
+							case BindEnum::ClassEnum::Spy: { sInfo = "spy"; break; }
+							}
+							break;
+						case BindEnum::WeaponType:
+							sType = "weapon";
+							switch (_tBind.m_iInfo)
+							{
+							case BindEnum::WeaponTypeEnum::Hitscan: { sInfo = "hitscan"; break; }
+							case BindEnum::WeaponTypeEnum::Projectile: { sInfo = "projectile"; break; }
+							case BindEnum::WeaponTypeEnum::Melee: { sInfo = "melee"; break; }
+							case BindEnum::WeaponTypeEnum::Throwable: { sInfo = "throwable"; break; }
+							}
+							break;
+						case BindEnum::ItemSlot:
+							sType = "slot";
+							sInfo = std::format("{}", _tBind.m_iInfo + 1);
+							break;
+						case BindEnum::Misc:
+							switch (_tBind.m_iInfo)
+							{
+							case BindEnum::MiscEnum::Spectated:
+							case BindEnum::MiscEnum::SpectatedFirst:
+							case BindEnum::MiscEnum::SpectatedThird:
+								sType = "spectated";
+								switch (_tBind.m_iInfo)
+								{
+								case BindEnum::MiscEnum::Spectated: { sInfo = "any"; break; }
+								case BindEnum::MiscEnum::SpectatedFirst: { sInfo = "1st"; break; }
+								case BindEnum::MiscEnum::SpectatedThird: { sInfo = "3rd"; break; }
+								}
+								break;
+							case BindEnum::MiscEnum::Zoomed:
+							case BindEnum::MiscEnum::Aiming:
+								sType = "cond";
+								switch (_tBind.m_iInfo)
+								{
+								case BindEnum::MiscEnum::Zoomed: { sInfo = "zoomed"; break; }
+								case BindEnum::MiscEnum::Aiming: { sInfo = "aiming"; break; }
+								}
+								break;
+							}
+							break;
 						}
-						if (_tBind.m_iType == BindEnum::Key)
-							FKeybind("Key", _tBind.m_iKey);
+						if (_tBind.m_bNot && (_tBind.m_iType != BindEnum::Key || _tBind.m_iInfo == BindEnum::KeyEnum::Hold))
+							sType = std::format("not {}", sType);
 
-						PopStyleVar();
-						EndPopup();
-					}
-					else if (FBeginPopupModal(std::format("DeleteBind{}", _iBind).c_str()))
-					{
-						FText(std::format("Do you really want to delete '{}'{}?", _tBind.m_sName, F::Binds.HasChildren(_iBind) ? " and all of its children" : "").c_str());
+						ImVec2 vOriginalPos = { H::Draw.Scale(8) + H::Draw.Scale(28) * std::min(x, 3), GetCursorPosY() + H::Draw.Scale(8) };
 
-						if (FButton("Yes", FButtonEnum::Left))
+						// background
+						float flWidth = GetWindowWidth() - GetStyle().WindowPadding.x * 2 - H::Draw.Scale(28) * std::min(x, 3);
+						float flHeight = H::Draw.Scale(28);
+						ImVec2 vDrawPos = GetDrawPos() + vOriginalPos;
+						if (iBind != _iBind)
+							GetWindowDrawList()->AddRectFilled(vDrawPos, vDrawPos + ImVec2(flWidth, flHeight), F::Render.Background1p5, H::Draw.Scale(4));
+						else
 						{
-							F::Binds.RemoveBind(_iBind);
-							CloseCurrentPopup();
+							ImColor tColor = F::Render.Background1p5L;
+							GetWindowDrawList()->AddRectFilled(vDrawPos, vDrawPos + ImVec2(flWidth, flHeight), tColor, H::Draw.Scale(4));
 
-							iBind = DEFAULT_BIND;
-							tBind = {};
+							tColor = ColorToVec((VecToColor(F::Render.Background1p5)).Lerp({ 127, 127, 127 }, 1.f / 9, LerpEnum::NoAlpha));
+							float flInset = H::Draw.Scale(0.5f) - 0.5f;
+							GetWindowDrawList()->AddRect(vDrawPos + ImVec2(flInset, flInset), vDrawPos + ImVec2(flWidth - flInset, flHeight - flInset), tColor, H::Draw.Scale(4), ImDrawFlags_None, H::Draw.Scale());
 						}
-						if (FButton("No", FButtonEnum::Right | FButtonEnum::SameLine))
-							CloseCurrentPopup();
 
-						EndPopup();
+						// text
+						if (x > 3)
+						{	// don't indent too much
+							auto sText = std::format("-> {}", x);
+							SetCursorPos(vOriginalPos + ImVec2(-FCalcTextSize(sText.c_str()).x - H::Draw.Scale(10), H::Draw.Scale(7)));
+							PushStyleColor(ImGuiCol_Text, F::Render.Inactive.Value);
+							FText(sText.c_str());
+							PopStyleColor();
+						}
+
+						float flTextWidth = flWidth - H::Draw.Scale(127);
+						PushTransparent(!F::Binds.WillBeEnabled(_iBind), true);
+
+						SetCursorPos(vOriginalPos + ImVec2(H::Draw.Scale(9), H::Draw.Scale(7)));
+						PushStyleColor(ImGuiCol_Text, _tBind.m_bActive ? F::Render.Accent.Value : F::Render.Active.Value);
+						FText(TruncateText(_tBind.m_sName, flTextWidth * (1.f / 3) - H::Draw.Scale(20)).c_str());
+						PopStyleColor();
+
+						SetCursorPos(vOriginalPos + ImVec2(flTextWidth * (1.f / 3), H::Draw.Scale(7)));
+						FText(sType.c_str());
+
+						SetCursorPos(vOriginalPos + ImVec2(flTextWidth * (2.f / 3), H::Draw.Scale(7)));
+						FText(sInfo.c_str());
+
+						// buttons
+						int iOffset = 1;
+
+						SetCursorPos(vOriginalPos + ImVec2(flWidth - H::Draw.Scale(iOffset += 25), H::Draw.Scale(2)));
+						bool bDelete = IconButton(ICON_MD_DELETE);
+
+						SetCursorPos(vOriginalPos + ImVec2(flWidth - H::Draw.Scale(iOffset += 25), H::Draw.Scale(2)));
+						if (IconButton(ICON_MD_EDIT))
+							CurrentBind = CurrentBind != _iBind ? _iBind : DEFAULT_BIND;
+
+						SetCursorPos(vOriginalPos + ImVec2(flWidth - H::Draw.Scale(iOffset += 25), H::Draw.Scale(2)));
+						if (IconButton(!_tBind.m_bNot ? ICON_MD_CODE : ICON_MD_CODE_OFF))
+							_tBind.m_bNot = !_tBind.m_bNot;
+
+						PushTransparent(Transparent || _tBind.m_iVisibility == BindVisibilityEnum::Hidden, true);
+						SetCursorPos(vOriginalPos + ImVec2(flWidth - H::Draw.Scale(iOffset += 25), H::Draw.Scale(2)));
+						if (IconButton(_tBind.m_iVisibility == BindVisibilityEnum::Always ? ICON_MD_VISIBILITY : ICON_MD_VISIBILITY_OFF))
+							_tBind.m_iVisibility = (_tBind.m_iVisibility + 1) % 3;
+						PopTransparent(1, 1);
+
+						SetCursorPos(vOriginalPos + ImVec2(flWidth - H::Draw.Scale(iOffset += 25), H::Draw.Scale(2)));
+						if (IconButton(_tBind.m_bEnabled ? ICON_MD_TOGGLE_ON : ICON_MD_TOGGLE_OFF))
+							_tBind.m_bEnabled = !_tBind.m_bEnabled;
+
+						SetCursorPos(vOriginalPos);
+						bool bClicked = Button(std::format("##{}", _iBind).c_str(), { flWidth, flHeight });
+						bool bPopup = IsItemClicked(ImGuiMouseButton_Right);
+
+						PopTransparent(1, 1);
+
+						if (bClicked)
+						{
+							if (!bParent)
+							{
+								iBind = _iBind;
+								tBind = _tBind;
+							}
+							else
+							{
+								bParent = false;
+								tBind.m_iParent = _iBind;
+
+								// make sure bind can't be parented to itself or any of its children
+								int _iBind2 = _iBind;
+								Bind_t _tBind2;
+								while (F::Binds.GetBind(_iBind2, &_tBind2))
+								{
+									if (_iBind2 == iBind)
+										tBind.m_iParent = DEFAULT_BIND;
+									_iBind2 = _tBind2.m_iParent;
+								}
+							}
+						}
+						else if (bPopup)
+							OpenPopup(std::format("RightClicked{}", _iBind).c_str());
+						else if (iDragging == -1 && IsItemHovered() && IsMouseDown(ImGuiMouseButton_Left))
+							iDragging = _iBind, iLayer = iParent;
+						else if (bDelete)
+						{
+							if (_tBind.m_vVars.size() <= 1 && !F::Binds.HasChildren(_iBind) || U::KeyHandler.Down(VK_SHIFT)) // allow user to quickly remove binds
+								F::Binds.RemoveBind(_iBind);
+							else
+								OpenPopup(std::format("DeleteBind{}", _iBind).c_str());
+						}
+
+						if (FBeginPopup(std::format("RightClicked{}", _iBind).c_str()))
+						{
+							PushStyleVar(ImGuiStyleVar_ItemSpacing, { H::Draw.Scale(8), 0 });
+
+							{
+								static std::string sInput = "";
+
+								bool bEnter = FInputText("Name...", sInput, H::Draw.Scale(284), ImGuiInputTextFlags_EnterReturnsTrue);
+								if (!IsItemFocused())
+									sInput = _tBind.m_sName;
+								if (bEnter)
+									_tBind.m_sName = sInput;
+							}
+
+							FDropdown("Type", &_tBind.m_iType, { "Key", "Class", "Weapon type", "Item slot", "Misc" }, {}, FDropdownEnum::Left);
+							switch (_tBind.m_iType)
+							{
+							case BindEnum::Key: FDropdown("Behavior", &_tBind.m_iInfo, { "Hold", "Toggle", "Double click" }, {}, FDropdownEnum::Right); break;
+							case BindEnum::Class: FDropdown("Class", &_tBind.m_iInfo, { "Scout", "Soldier", "Pyro", "Demoman", "Heavy", "Engineer", "Medic", "Sniper", "Spy" }, {}, FDropdownEnum::Right); break;
+							case BindEnum::WeaponType: FDropdown("Weapon type", &_tBind.m_iInfo, { "Hitscan", "Projectile", "Melee", "Throwable" }, {}, FDropdownEnum::Right); break;
+							case BindEnum::ItemSlot: FDropdown("Item slot", &_tBind.m_iInfo, { "1", "2", "3", "4", "5", "6", "7", "8", "9" }, {}, FDropdownEnum::Right); break;
+							case BindEnum::Misc: FDropdown("Misc", &_tBind.m_iInfo, { "Spectated", "Spectated 1st", "Spectated 3rd", "##Divider", "Zoomed", "Aiming" }, {}, FDropdownEnum::Right); break;
+							}
+							if (_tBind.m_iType == BindEnum::Key)
+								FKeybind("Key", _tBind.m_iKey);
+
+							PopStyleVar();
+							EndPopup();
+						}
+						else if (FBeginPopupModal(std::format("DeleteBind{}", _iBind).c_str()))
+						{
+							FText(std::format("Do you really want to delete '{}'{}?", _tBind.m_sName, F::Binds.HasChildren(_iBind) ? " and all of its children" : "").c_str());
+
+							if (FButton("Yes", FButtonEnum::Left))
+							{
+								F::Binds.RemoveBind(_iBind);
+								CloseCurrentPopup();
+
+								iBind = DEFAULT_BIND;
+								tBind = {};
+							}
+							if (FButton("No", FButtonEnum::Right | FButtonEnum::SameLine))
+								CloseCurrentPopup();
+
+							EndPopup();
+						}
+
+						if (iParent != DEFAULT_BIND - 1)
+							fGetBinds(_iBind, x + 1);
 					}
-
-					if (iParent != DEFAULT_BIND - 1)
-						fGetBinds(_iBind, x + 1);
-				}
-			};
+				};
 			fGetBinds(DEFAULT_BIND, 0);
 
 			// this should ideally never happen, but failsafe
@@ -3164,21 +3169,21 @@ void CMenu::MenuSettings(int iTab)
 					vMaterials.push_back(tMaterial);
 
 				std::sort(vMaterials.begin(), vMaterials.end(), [&](const auto& a, const auto& b) -> bool
-				{
-					// override for none material
-					if (FNV1A::Hash32(a.m_sName.c_str()) == FNV1A::Hash32Const("None"))
-						return true;
-					if (FNV1A::Hash32(b.m_sName.c_str()) == FNV1A::Hash32Const("None"))
-						return false;
+					{
+						// override for none material
+						if (FNV1A::Hash32(a.m_sName.c_str()) == FNV1A::Hash32Const("None"))
+							return true;
+						if (FNV1A::Hash32(b.m_sName.c_str()) == FNV1A::Hash32Const("None"))
+							return false;
 
-					// keep locked materials higher
-					if (a.m_bLocked && !b.m_bLocked)
-						return true;
-					if (!a.m_bLocked && b.m_bLocked)
-						return false;
+						// keep locked materials higher
+						if (a.m_bLocked && !b.m_bLocked)
+							return true;
+						if (!a.m_bLocked && b.m_bLocked)
+							return false;
 
-					return a.m_sName < b.m_sName;
-				});
+						return a.m_sName < b.m_sName;
+					});
 
 				for (auto& tMaterial : vMaterials)
 				{
@@ -3257,7 +3262,7 @@ void CMenu::MenuSettings(int iTab)
 						DebugDummy({ 0, H::Draw.Scale(8) });
 
 						tTextEditor.SetLanguage(TextEditor::Language::Cpp());
-						TextEditor::Palette tPalette = {{
+						TextEditor::Palette tPalette = { {
 							F::Render.Active,				// text
 							F::Render.Active,				// keyword
 							F::Render.Active,				// declaration
@@ -3272,15 +3277,15 @@ void CMenu::MenuSettings(int iTab)
 							F::Render.Active,				// cursor
 							ImColor(F::Render.Inactive.Value.x, F::Render.Inactive.Value.y, F::Render.Inactive.Value.z, 0.5f),	// selection
 							ImColor(F::Render.Inactive.Value.x, F::Render.Inactive.Value.y, F::Render.Inactive.Value.z, 0.1f),	// whitespace
-							IM_COL32( 70,  70,  70, 255),	// matchingBracketBackground
+							IM_COL32(70,  70,  70, 255),	// matchingBracketBackground
 							IM_COL32(140, 140, 140, 255),	// matchingBracketActive
 							IM_COL32(246, 222,  36, 255),	// matchingBracketLevel1
-							IM_COL32( 66, 120, 198, 255),	// matchingBracketLevel2
+							IM_COL32(66, 120, 198, 255),	// matchingBracketLevel2
 							IM_COL32(213,  96, 213, 255),	// matchingBracketLevel3
 							IM_COL32(198,   8,  32, 255),	// matchingBracketError
 							F::Render.Inactive,				// line number
 							F::Render.Active,				// current line number
-						}};
+						} };
 						tTextEditor.SetPalette(tPalette);
 						//TextEditor.SetShowLineNumbersEnabled(false);
 
@@ -3497,22 +3502,22 @@ void CMenu::MenuSettings(int iTab)
 		if (Section("Hooks"))
 		{
 			auto SetAll = [](bool bEnable)
-			{
-				for (auto& pBase : G::Vars)
 				{
-					if (std::string(pBase->Name()).find("Vars::Hooks::") == std::string::npos)
-						continue;
-
-					switch (FNV1A::Hash32(pBase->Name()))
+					for (auto& pBase : G::Vars)
 					{
-					case FNV1A::Hash32Const("Vars::Hooks::Direct3DDevice9_Present"):
-					case FNV1A::Hash32Const("Vars::Hooks::Direct3DDevice9_Reset"):
-						break;
-					default:
-						pBase->As<bool>()->Map[DEFAULT_BIND] = bEnable;
+						if (std::string(pBase->Name()).find("Vars::Hooks::") == std::string::npos)
+							continue;
+
+						switch (FNV1A::Hash32(pBase->Name()))
+						{
+						case FNV1A::Hash32Const("Vars::Hooks::Direct3DDevice9_Present"):
+						case FNV1A::Hash32Const("Vars::Hooks::Direct3DDevice9_Reset"):
+							break;
+						default:
+							pBase->As<bool>()->Map[DEFAULT_BIND] = bEnable;
+						}
 					}
-				}
-			};
+				};
 			if (FButton("Enable all", FButtonEnum::Left))
 				SetAll(true);
 			if (FButton("Disable all", FButtonEnum::Right | FButtonEnum::SameLine))
@@ -3896,6 +3901,21 @@ struct BindInfo_t
 	int iBind;
 	Bind_t& tBind;
 };
+
+// Fade animation state: maps bind index -> current alpha [0,1]
+static std::unordered_map<int, float> s_mBindAlpha = {};
+// Maps bind index -> last rendered row index (for fade-out positioning)
+static std::unordered_map<int, int> s_mBindLastRow = {};
+// Which binds were visible last frame (to detect new arrivals / departures)
+static std::unordered_set<int> s_mBindWasVisible = {};
+// Binds fading out: still being rendered but no longer in vInfo
+struct FadingBind_t { std::string sName; int iBind; float flAlpha; int iRow; };
+static std::vector<FadingBind_t> s_vFadingOut = {};
+// Smoothed row count for window height animation
+static float s_flAnimatedCount = 0.f;
+
+static constexpr float BIND_FADE_SPEED = 5.f;  // alpha/sec
+static constexpr float BIND_SIZE_SPEED = 10.f; // rows/sec
 void CMenu::DrawBinds()
 {
 	using namespace ImGui;
@@ -3905,92 +3925,92 @@ void CMenu::DrawBinds()
 
 	std::vector<BindInfo_t> vInfo;
 	std::function<void(int)> fGetBinds = [&](int iParent)
-	{
-		for (int iBind = 0; iBind < F::Binds.m_vBinds.size(); iBind++)
 		{
-			auto& tBind = F::Binds.m_vBinds[iBind];
-			if (iParent != tBind.m_iParent || !tBind.m_bEnabled && !m_bIsOpen)
-				continue;
-
-			if (tBind.m_iVisibility == BindVisibilityEnum::Always || tBind.m_iVisibility == BindVisibilityEnum::WhileActive && tBind.m_bActive || m_bIsOpen)
+			for (int iBind = 0; iBind < F::Binds.m_vBinds.size(); iBind++)
 			{
-				std::string sType; std::string sInfo;
-				switch (tBind.m_iType)
+				auto& tBind = F::Binds.m_vBinds[iBind];
+				if (iParent != tBind.m_iParent || !tBind.m_bEnabled && !m_bIsOpen)
+					continue;
+
+				if (tBind.m_iVisibility == BindVisibilityEnum::Always || tBind.m_iVisibility == BindVisibilityEnum::WhileActive && tBind.m_bActive || m_bIsOpen)
 				{
-				case BindEnum::Key:
-					switch (tBind.m_iInfo)
+					std::string sType; std::string sInfo;
+					switch (tBind.m_iType)
 					{
-					case BindEnum::KeyEnum::Hold: { sType = "hold"; break; }
-					case BindEnum::KeyEnum::Toggle: { sType = "toggle"; break; }
-					case BindEnum::KeyEnum::DoubleClick: { sType = "double"; break; }
-					}
-					sInfo = U::KeyHandler.String(tBind.m_iKey);
-					break;
-				case BindEnum::Class:
-					sType = "class";
-					switch (tBind.m_iInfo)
-					{
-					case BindEnum::ClassEnum::Scout: { sInfo = "scout"; break; }
-					case BindEnum::ClassEnum::Soldier: { sInfo = "soldier"; break; }
-					case BindEnum::ClassEnum::Pyro: { sInfo = "pyro"; break; }
-					case BindEnum::ClassEnum::Demoman: { sInfo = "demoman"; break; }
-					case BindEnum::ClassEnum::Heavy: { sInfo = "heavy"; break; }
-					case BindEnum::ClassEnum::Engineer: { sInfo = "engineer"; break; }
-					case BindEnum::ClassEnum::Medic: { sInfo = "medic"; break; }
-					case BindEnum::ClassEnum::Sniper: { sInfo = "sniper"; break; }
-					case BindEnum::ClassEnum::Spy: { sInfo = "spy"; break; }
-					}
-					break;
-				case BindEnum::WeaponType:
-					sType = "weapon";
-					switch (tBind.m_iInfo)
-					{
-					case BindEnum::WeaponTypeEnum::Hitscan: { sInfo = "hitscan"; break; }
-					case BindEnum::WeaponTypeEnum::Projectile: { sInfo = "projectile"; break; }
-					case BindEnum::WeaponTypeEnum::Melee: { sInfo = "melee"; break; }
-					case BindEnum::WeaponTypeEnum::Throwable: { sInfo = "throwable"; break; }
-					}
-					break;
-				case BindEnum::ItemSlot:
-					sType = "slot";
-					sInfo = std::format("{}", tBind.m_iInfo + 1);
-					break;
-				case BindEnum::Misc:
-					switch (tBind.m_iInfo)
-					{
-					case BindEnum::MiscEnum::Spectated:
-					case BindEnum::MiscEnum::SpectatedFirst:
-					case BindEnum::MiscEnum::SpectatedThird:
-						sType = "spectated";
+					case BindEnum::Key:
 						switch (tBind.m_iInfo)
 						{
-						case BindEnum::MiscEnum::Spectated: { sInfo = "any"; break; }
-						case BindEnum::MiscEnum::SpectatedFirst: { sInfo = "1st"; break; }
-						case BindEnum::MiscEnum::SpectatedThird: { sInfo = "3rd"; break; }
+						case BindEnum::KeyEnum::Hold: { sType = "hold"; break; }
+						case BindEnum::KeyEnum::Toggle: { sType = "toggle"; break; }
+						case BindEnum::KeyEnum::DoubleClick: { sType = "double"; break; }
 						}
+						sInfo = U::KeyHandler.String(tBind.m_iKey);
 						break;
-					case BindEnum::MiscEnum::Zoomed:
-					case BindEnum::MiscEnum::Aiming:
-						sType = "cond";
+					case BindEnum::Class:
+						sType = "class";
 						switch (tBind.m_iInfo)
 						{
-						case BindEnum::MiscEnum::Zoomed: { sInfo = "zoomed"; break; }
-						case BindEnum::MiscEnum::Aiming: { sInfo = "aiming"; break; }
+						case BindEnum::ClassEnum::Scout: { sInfo = "scout"; break; }
+						case BindEnum::ClassEnum::Soldier: { sInfo = "soldier"; break; }
+						case BindEnum::ClassEnum::Pyro: { sInfo = "pyro"; break; }
+						case BindEnum::ClassEnum::Demoman: { sInfo = "demoman"; break; }
+						case BindEnum::ClassEnum::Heavy: { sInfo = "heavy"; break; }
+						case BindEnum::ClassEnum::Engineer: { sInfo = "engineer"; break; }
+						case BindEnum::ClassEnum::Medic: { sInfo = "medic"; break; }
+						case BindEnum::ClassEnum::Sniper: { sInfo = "sniper"; break; }
+						case BindEnum::ClassEnum::Spy: { sInfo = "spy"; break; }
+						}
+						break;
+					case BindEnum::WeaponType:
+						sType = "weapon";
+						switch (tBind.m_iInfo)
+						{
+						case BindEnum::WeaponTypeEnum::Hitscan: { sInfo = "hitscan"; break; }
+						case BindEnum::WeaponTypeEnum::Projectile: { sInfo = "projectile"; break; }
+						case BindEnum::WeaponTypeEnum::Melee: { sInfo = "melee"; break; }
+						case BindEnum::WeaponTypeEnum::Throwable: { sInfo = "throwable"; break; }
+						}
+						break;
+					case BindEnum::ItemSlot:
+						sType = "slot";
+						sInfo = std::format("{}", tBind.m_iInfo + 1);
+						break;
+					case BindEnum::Misc:
+						switch (tBind.m_iInfo)
+						{
+						case BindEnum::MiscEnum::Spectated:
+						case BindEnum::MiscEnum::SpectatedFirst:
+						case BindEnum::MiscEnum::SpectatedThird:
+							sType = "spectated";
+							switch (tBind.m_iInfo)
+							{
+							case BindEnum::MiscEnum::Spectated: { sInfo = "any"; break; }
+							case BindEnum::MiscEnum::SpectatedFirst: { sInfo = "1st"; break; }
+							case BindEnum::MiscEnum::SpectatedThird: { sInfo = "3rd"; break; }
+							}
+							break;
+						case BindEnum::MiscEnum::Zoomed:
+						case BindEnum::MiscEnum::Aiming:
+							sType = "cond";
+							switch (tBind.m_iInfo)
+							{
+							case BindEnum::MiscEnum::Zoomed: { sInfo = "zoomed"; break; }
+							case BindEnum::MiscEnum::Aiming: { sInfo = "aiming"; break; }
+							}
+							break;
 						}
 						break;
 					}
-					break;
+					if (tBind.m_bNot && (tBind.m_iType != BindEnum::Key || tBind.m_iInfo == BindEnum::KeyEnum::Hold))
+						sInfo = std::format("not {}", sInfo);
+
+					vInfo.emplace_back(tBind.m_sName.c_str(), sType, sInfo, iBind, tBind);
 				}
-				if (tBind.m_bNot && (tBind.m_iType != BindEnum::Key || tBind.m_iInfo == BindEnum::KeyEnum::Hold))
-					sInfo = std::format("not {}", sInfo);
 
-				vInfo.emplace_back(tBind.m_sName.c_str(), sType, sInfo, iBind, tBind);
+				if (tBind.m_bActive || m_bIsOpen)
+					fGetBinds(iBind);
 			}
-
-			if (tBind.m_bActive || m_bIsOpen)
-				fGetBinds(iBind);
-		}
-	};
+		};
 	fGetBinds(DEFAULT_BIND);
 	if (vInfo.empty())
 		return;
@@ -4012,7 +4032,16 @@ void CMenu::DrawBinds()
 	flNameWidth += H::Draw.Scale(9), flInfoWidth += H::Draw.Scale(9), flStateWidth += H::Draw.Scale(9);
 
 	float flWidth = flNameWidth + flInfoWidth + flStateWidth + (m_bIsOpen ? H::Draw.Scale(113) : H::Draw.Scale(14));
-	float flHeight = H::Draw.Scale(18 * vInfo.size() + (Vars::Menu::BindWindowTitle.Value ? 42 : 12));
+
+	// Smooth the row count toward the real count for a sliding height animation
+	float flDT = ImGui::GetIO().DeltaTime;
+	float flTargetCount = float(vInfo.size());
+	if (s_flAnimatedCount < flTargetCount)
+		s_flAnimatedCount = std::min(flTargetCount, s_flAnimatedCount + BIND_SIZE_SPEED * flDT);
+	else
+		s_flAnimatedCount = std::max(flTargetCount, s_flAnimatedCount - BIND_SIZE_SPEED * flDT);
+
+	float flHeight = H::Draw.Scale(18 * s_flAnimatedCount + (Vars::Menu::BindWindowTitle.Value ? 42 : 12));
 	SetNextWindowSize({ flWidth, flHeight }, ImGuiCond_Always);
 	PushStyleVar(ImGuiStyleVar_WindowMinSize, { H::Draw.Scale(40), H::Draw.Scale(40) });
 	if (Begin("Binds", nullptr, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoSavedSettings))
@@ -4023,6 +4052,14 @@ void CMenu::DrawBinds()
 			RenderTwoToneBackground(H::Draw.Scale(28), F::Render.Background0, F::Render.Background0p5, F::Render.Background2);
 		else
 			RenderBackground(F::Render.Background0p5, F::Render.Background2);
+
+		// accent outline around the bind window
+		{
+			ImVec2 vDrawPos = GetDrawPos();
+			ImVec2 vWinSize = GetWindowSize();
+			float flOutlineInset = H::Draw.Scale(0.5f) - 0.5f;
+			GetWindowDrawList()->AddRect(vDrawPos + ImVec2(flOutlineInset, flOutlineInset), vDrawPos + vWinSize - ImVec2(flOutlineInset, flOutlineInset), F::Render.Accent, 0.f, ImDrawFlags_None, H::Draw.Scale());
+		}
 
 		tDragBox.x = vWindowPos.x; tDragBox.y = vWindowPos.y; tOld = tDragBox;
 		if (m_bIsOpen)
@@ -4041,13 +4078,54 @@ void CMenu::DrawBinds()
 			iListStart = 36;
 		}
 
+		// Update fade-in alphas and track which binds are currently visible
+		std::unordered_set<int> mNowVisible = {};
+		for (auto& [sName, sInfo, sState, iBind, tBind] : vInfo)
+		{
+			mNowVisible.insert(iBind);
+			bool bWasVisible = s_mBindWasVisible.count(iBind) > 0;
+			float& flAlpha = s_mBindAlpha[iBind];
+			if (!bWasVisible)
+				flAlpha = 0.f; // new entry — start transparent
+			flAlpha = std::min(1.f, flAlpha + BIND_FADE_SPEED * flDT);
+		}
+
+		// Detect binds that just disappeared — start fading them out
+		for (int prevBind : s_mBindWasVisible)
+		{
+			if (!mNowVisible.count(prevBind))
+			{
+				bool alreadyFading = false;
+				for (auto& fb : s_vFadingOut)
+					if (fb.iBind == prevBind) { alreadyFading = true; break; }
+
+				if (!alreadyFading && s_mBindAlpha.count(prevBind) && s_mBindAlpha[prevBind] > 0.f)
+				{
+					std::string sName = prevBind < (int)F::Binds.m_vBinds.size() ? F::Binds.m_vBinds[prevBind].m_sName : "";
+					int iRow = s_mBindLastRow.count(prevBind) ? s_mBindLastRow[prevBind] : 0;
+					s_vFadingOut.push_back({ sName, prevBind, s_mBindAlpha[prevBind], iRow });
+				}
+			}
+		}
+		s_mBindWasVisible = mNowVisible;
+
+		// Tick fading-out binds down
+		s_vFadingOut.erase(std::remove_if(s_vFadingOut.begin(), s_vFadingOut.end(), [&](FadingBind_t& fb) {
+			fb.flAlpha = std::max(0.f, fb.flAlpha - BIND_FADE_SPEED * flDT);
+			return fb.flAlpha <= 0.f;
+			}), s_vFadingOut.end());
+
 		PushFont(F::Render.FontSmall);
 		int i = 0; for (auto& [sName, sInfo, sState, iBind, tBind] : vInfo)
 		{
 			float flPosX = 0;
+			float flAlpha = s_mBindAlpha.count(iBind) ? s_mBindAlpha[iBind] : 1.f;
+			s_mBindLastRow[iBind] = i; // track for fade-out positioning
 
 			if (m_bIsOpen)
 				PushTransparent(!F::Binds.WillBeEnabled(iBind), true);
+
+			PushStyleVar(ImGuiStyleVar_Alpha, GetStyle().Alpha * flAlpha);
 
 			SetCursorPos({ flPosX += H::Draw.Scale(12), H::Draw.Scale(iListStart + 18 * i) });
 			PushStyleColor(ImGuiCol_Text, tBind.m_bActive ? F::Render.Accent.Value : F::Render.Inactive.Value);
@@ -4061,6 +4139,8 @@ void CMenu::DrawBinds()
 			SetCursorPos({ flPosX += flInfoWidth, H::Draw.Scale(iListStart + 18 * i) });
 			FText(sState.c_str());
 			PopStyleColor();
+
+			PopStyleVar();
 
 			if (m_bIsOpen)
 			{	// buttons
@@ -4119,6 +4199,18 @@ void CMenu::DrawBinds()
 
 			i++;
 		}
+
+		// Render fading-out entries overlaid at their last known row positions
+		for (auto& fb : s_vFadingOut)
+		{
+			PushStyleVar(ImGuiStyleVar_Alpha, GetStyle().Alpha * fb.flAlpha);
+			SetCursorPos({ H::Draw.Scale(12), H::Draw.Scale(iListStart + 18 * fb.iRow) });
+			PushStyleColor(ImGuiCol_Text, F::Render.Inactive.Value);
+			FText(fb.sName.c_str());
+			PopStyleColor();
+			PopStyleVar();
+		}
+
 		PopFont();
 
 		End();

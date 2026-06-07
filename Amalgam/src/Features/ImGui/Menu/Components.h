@@ -211,7 +211,7 @@ namespace ImGui
 		ImVec2 vDrawPos = GetDrawPos();
 		ImDrawList* pDrawList = GetWindowDrawList();
 
-		pDrawList->AddRectFilled(vDrawPos, vDrawPos + vSize, uBackground, H::Draw.Scale(4));
+		pDrawList->AddRectFilled(vDrawPos, vDrawPos + vSize, uBackground, 0.f);
 	}
 	inline void RenderBackground(ImU32 uBackground, ImU32 uBorder, float flInset = H::Draw.Scale())
 	{
@@ -219,10 +219,10 @@ namespace ImGui
 		ImVec2 vDrawPos = GetDrawPos();
 		ImDrawList* pDrawList = GetWindowDrawList();
 
-		pDrawList->AddRectFilled(vDrawPos + ImVec2(flInset, flInset), vDrawPos + vSize - ImVec2(flInset, flInset), uBackground, H::Draw.Scale(3));
+		pDrawList->AddRectFilled(vDrawPos + ImVec2(flInset, flInset), vDrawPos + vSize - ImVec2(flInset, flInset), uBackground, 0.f);
 		
 		flInset += H::Draw.Scale(0.5f) - 0.5f - H::Draw.Scale();
-		pDrawList->AddRect(vDrawPos + ImVec2(flInset, flInset), vDrawPos + vSize - ImVec2(flInset, flInset), uBorder, H::Draw.Scale(4), ImDrawFlags_None, H::Draw.Scale());
+		pDrawList->AddRect(vDrawPos + ImVec2(flInset, flInset), vDrawPos + vSize - ImVec2(flInset, flInset), uBorder, 0.f, ImDrawFlags_None, H::Draw.Scale());
 	}
 	inline void RenderTwoToneBackground(float flSize, ImU32 uTitle, ImU32 uBackground, bool bHorizontal = false)
 	{
@@ -232,13 +232,13 @@ namespace ImGui
 
 		if (!bHorizontal)
 		{
-			pDrawList->AddRectFilled(vDrawPos, vDrawPos + ImVec2(vSize.x, flSize), uTitle, H::Draw.Scale(4), ImDrawFlags_RoundCornersTopLeft | ImDrawFlags_RoundCornersTopRight);
-			pDrawList->AddRectFilled(vDrawPos + ImVec2(0, flSize), vDrawPos + vSize, uBackground, H::Draw.Scale(4), ImDrawFlags_RoundCornersBottomLeft | ImDrawFlags_RoundCornersBottomRight);
+			pDrawList->AddRectFilled(vDrawPos, vDrawPos + ImVec2(vSize.x, flSize), uTitle, 0.f);
+			pDrawList->AddRectFilled(vDrawPos + ImVec2(0, flSize), vDrawPos + vSize, uBackground, 0.f);
 		}
 		else
 		{
-			pDrawList->AddRectFilled(vDrawPos, vDrawPos + ImVec2(flSize, vSize.y), uTitle, H::Draw.Scale(4), ImDrawFlags_RoundCornersTopLeft | ImDrawFlags_RoundCornersBottomLeft);
-			pDrawList->AddRectFilled(vDrawPos + ImVec2(flSize, 0), vDrawPos + vSize, uBackground, H::Draw.Scale(4), ImDrawFlags_RoundCornersTopRight | ImDrawFlags_RoundCornersBottomRight);
+			pDrawList->AddRectFilled(vDrawPos, vDrawPos + ImVec2(flSize, vSize.y), uTitle, 0.f);
+			pDrawList->AddRectFilled(vDrawPos + ImVec2(flSize, 0), vDrawPos + vSize, uBackground, 0.f);
 		}
 	}
 	inline void RenderTwoToneBackground(float flSize, ImU32 uTitle, ImU32 uBackground, ImU32 uBorder, float flInset = H::Draw.Scale(), bool bVertical = true, bool bTwoToneBorder = true)
@@ -250,28 +250,28 @@ namespace ImGui
 		if (bVertical)
 		{
 			if (!bTwoToneBorder)
-				pDrawList->AddRectFilled(vDrawPos + ImVec2(flInset, flInset), vDrawPos + ImVec2(vSize.x - flInset, flSize), uTitle, H::Draw.Scale(3), ImDrawFlags_RoundCornersTopLeft | ImDrawFlags_RoundCornersTopRight);
+				pDrawList->AddRectFilled(vDrawPos + ImVec2(flInset, flInset), vDrawPos + ImVec2(vSize.x - flInset, flSize), uTitle, 0.f);
 			else
 			{
-				pDrawList->AddRectFilled(vDrawPos + ImVec2(flInset, flInset), vDrawPos + ImVec2(vSize.x - flInset, flSize - H::Draw.Scale()), uTitle, H::Draw.Scale(3), ImDrawFlags_RoundCornersTopLeft | ImDrawFlags_RoundCornersTopRight);
+				pDrawList->AddRectFilled(vDrawPos + ImVec2(flInset, flInset), vDrawPos + ImVec2(vSize.x - flInset, flSize - H::Draw.Scale()), uTitle, 0.f);
 				pDrawList->AddRectFilled(vDrawPos + ImVec2(flInset, flSize - H::Draw.Scale()), vDrawPos + ImVec2(vSize.x - flInset, flSize), uBorder);
 			}
-			pDrawList->AddRectFilled(vDrawPos + ImVec2(flInset, flSize), vDrawPos + vSize - ImVec2(flInset, flInset), uBackground, H::Draw.Scale(3), ImDrawFlags_RoundCornersBottomLeft | ImDrawFlags_RoundCornersBottomRight);
+			pDrawList->AddRectFilled(vDrawPos + ImVec2(flInset, flSize), vDrawPos + vSize - ImVec2(flInset, flInset), uBackground, 0.f);
 		}
 		else
 		{
 			if (!bTwoToneBorder)
-				pDrawList->AddRectFilled(vDrawPos + ImVec2(flInset, flInset), vDrawPos + ImVec2(flSize, vSize.y - flInset), uTitle, H::Draw.Scale(3), ImDrawFlags_RoundCornersTopLeft | ImDrawFlags_RoundCornersBottomLeft);
+				pDrawList->AddRectFilled(vDrawPos + ImVec2(flInset, flInset), vDrawPos + ImVec2(flSize, vSize.y - flInset), uTitle, 0.f);
 			else
 			{
-				pDrawList->AddRectFilled(vDrawPos + ImVec2(flInset, flInset), vDrawPos + ImVec2(flSize - H::Draw.Scale(), vSize.y - flInset), uTitle, H::Draw.Scale(3), ImDrawFlags_RoundCornersTopLeft | ImDrawFlags_RoundCornersBottomLeft);
+				pDrawList->AddRectFilled(vDrawPos + ImVec2(flInset, flInset), vDrawPos + ImVec2(flSize - H::Draw.Scale(), vSize.y - flInset), uTitle, 0.f);
 				pDrawList->AddRectFilled(vDrawPos + ImVec2(flSize - H::Draw.Scale(), flInset), vDrawPos + ImVec2(flSize, vSize.y - flInset), uBorder);
 			}
-			pDrawList->AddRectFilled(vDrawPos + ImVec2(flSize, flInset), vDrawPos + vSize - ImVec2(flInset, flInset), uBackground, H::Draw.Scale(3), ImDrawFlags_RoundCornersTopRight | ImDrawFlags_RoundCornersBottomRight);
+			pDrawList->AddRectFilled(vDrawPos + ImVec2(flSize, flInset), vDrawPos + vSize - ImVec2(flInset, flInset), uBackground, 0.f);
 		}
 		
 		flInset += H::Draw.Scale(0.5f) - 0.5f - H::Draw.Scale();
-		pDrawList->AddRect(vDrawPos + ImVec2(flInset, flInset), vDrawPos + vSize - ImVec2(flInset, flInset), uBorder, H::Draw.Scale(4), ImDrawFlags_None, H::Draw.Scale());
+		pDrawList->AddRect(vDrawPos + ImVec2(flInset, flInset), vDrawPos + vSize - ImVec2(flInset, flInset), uBorder, 0.f, ImDrawFlags_None, H::Draw.Scale());
 	}
 	inline void Divider(float flPrePadding = H::Draw.Scale(8), float flPostPadding = H::Draw.Scale(7), float flInset = H::Draw.Scale(), ImU32 uBorder = F::Render.Background2)
 	{
@@ -477,7 +477,7 @@ namespace ImGui
 			pDrawList->AddTriangleFilled(vP1 + ImVec2(flInset / 2, 0), vP2 + ImVec2(-flInset / 2, 0), vP3 + ImVec2(0, flInset / 2), F::Render.Background1p5);
 			*/
 
-			pDrawList->AddRectFilled(vPos, { vPos.x + vText.x, vPos.y + vText.y }, F::Render.Background2, H::Draw.Scale(3));
+			pDrawList->AddRectFilled(vPos, { vPos.x + vText.x, vPos.y + vText.y }, F::Render.Background2, 0.f);
 			pDrawList->AddTriangleFilled(vP1, vP2, vP3, F::Render.Background2);
 
 			vPos.x += vText.x / 2;
@@ -531,7 +531,7 @@ namespace ImGui
 		bool bReturn = InputText(std::format("##{}", sLabel).c_str(), &sText, iFlags | ImGuiInputTextFlags_NoKeyboardNavigate, fCallback);
 		ImVec2 vSize = GetItemRectSize();
 		float flInset = H::Draw.Scale(0.5f) - 0.5f;
-		GetWindowDrawList()->AddRect(vDrawPos + ImVec2(flInset, flInset), vDrawPos + ImVec2(vSize.x - flInset, vSize.y - flInset), F::Render.Background2, H::Draw.Scale(4), ImDrawFlags_None, H::Draw.Scale());
+		GetWindowDrawList()->AddRect(vDrawPos + ImVec2(flInset, flInset), vDrawPos + ImVec2(vSize.x - flInset, vSize.y - flInset), F::Render.Background2, 0.f, ImDrawFlags_None, H::Draw.Scale());
 
 		if (sText.empty())
 			GetWindowDrawList()->AddText(vDrawPos + GetStyle().FramePadding, F::Render.Inactive, sLabel);
@@ -1096,7 +1096,7 @@ namespace ImGui
 		PushStyleColor(ImGuiCol_Text, tColor.Value);
 		bool bReturn = Button(sLabel, vSize);
 		float flInset = H::Draw.Scale(0.5f) - 0.5f;
-		GetWindowDrawList()->AddRect(vDrawPos + ImVec2(flInset, flInset), vDrawPos + vSize - ImVec2(flInset, flInset), tColor, H::Draw.Scale(4), ImDrawFlags_None, H::Draw.Scale());
+		GetWindowDrawList()->AddRect(vDrawPos + ImVec2(flInset, flInset), vDrawPos + vSize - ImVec2(flInset, flInset), tColor, 0.f, ImDrawFlags_None, H::Draw.Scale());
 		if (bWithin)
 		{
 			if (bClicked)
@@ -1104,7 +1104,7 @@ namespace ImGui
 			else
 				tColor.Value.w /= 20;
 			flInset = H::Draw.Scale();
-			GetWindowDrawList()->AddRectFilled(vDrawPos + ImVec2(flInset, flInset), vDrawPos + vSize - ImVec2(flInset, flInset), tColor, H::Draw.Scale(3));
+			GetWindowDrawList()->AddRectFilled(vDrawPos + ImVec2(flInset, flInset), vDrawPos + vSize - ImVec2(flInset, flInset), tColor, 0.f);
 		}
 		PopStyleColor();
 
@@ -1145,6 +1145,13 @@ namespace ImGui
 		bool bReturn = Button(std::format("##{}", sLabel).c_str(), vSize);
 		if (pHovered)
 			*pHovered = IsItemHovered();
+
+		// draw outline around the toggle widget
+		{
+			ImVec2 vDrawPos2 = GetDrawPos() + vOriginalPos;
+			float flInset = H::Draw.Scale(0.5f) - 0.5f;
+			GetWindowDrawList()->AddRect(vDrawPos2 + ImVec2(flInset, flInset), vDrawPos2 + vSize - ImVec2(flInset, flInset), F::Render.Background2, 0.f, ImDrawFlags_None, H::Draw.Scale());
+		}
 
 		ImColor tColor = *pVar ? (iFlags & FToggleEnum::PlainColor ? F::Render.Active : F::Render.Accent) : F::Render.Inactive;
 		if (Disabled)
@@ -1665,6 +1672,13 @@ namespace ImGui
 		PopItemWidth();
 		PopStyleVar();
 
+		// draw outline around the combo box
+		{
+			ImVec2 vDrawPos2 = GetDrawPos() + vOriginalPos + ImVec2(0, GetStyle().WindowPadding.y);
+			float flInset = H::Draw.Scale(0.5f) - 0.5f;
+			GetWindowDrawList()->AddRect(vDrawPos2 + ImVec2(flInset, flInset), vDrawPos2 + ImVec2(vSize.x - flInset, vSize.y - flInset), F::Render.Background2, 0.f, ImDrawFlags_None, H::Draw.Scale());
+		}
+
 		SetCursorPos(vOriginalPos);
 		AddRowSize(vOriginalPos, vSize + ImVec2(0, GetStyle().WindowPadding.y));
 		DebugDummy({ vSize.x, GetRowSize(vSize.y + GetStyle().WindowPadding.y) });
@@ -1898,6 +1912,13 @@ namespace ImGui
 			PopStyleVar();
 		}
 		PopStyleVar();
+
+		// draw outline around the combo box
+		{
+			ImVec2 vDrawPos2 = GetDrawPos() + vOriginalPos + ImVec2(0, GetStyle().WindowPadding.y);
+			float flInset = H::Draw.Scale(0.5f) - 0.5f;
+			GetWindowDrawList()->AddRect(vDrawPos2 + ImVec2(flInset, flInset), vDrawPos2 + ImVec2(vSize.x - flInset, vSize.y - flInset), F::Render.Background2, 0.f, ImDrawFlags_None, H::Draw.Scale());
+		}
 
 		SetCursorPos(vOriginalPos);
 		AddRowSize(vOriginalPos, vSize + ImVec2(0, GetStyle().WindowPadding.y));
@@ -2275,6 +2296,13 @@ namespace ImGui
 
 		PopItemWidth();
 		PopStyleVar();
+
+		// draw outline around the combo box
+		{
+			ImVec2 vDrawPos2 = GetDrawPos() + vOriginalPos + ImVec2(0, GetStyle().WindowPadding.y);
+			float flInset = H::Draw.Scale(0.5f) - 0.5f;
+			GetWindowDrawList()->AddRect(vDrawPos2 + ImVec2(flInset, flInset), vDrawPos2 + ImVec2(vSize.x - flInset, vSize.y - flInset), F::Render.Background2, 0.f, ImDrawFlags_None, H::Draw.Scale());
+		}
 
 		SetCursorPos(vOriginalPos);
 		AddRowSize(vOriginalPos, vSize + ImVec2(0, GetStyle().WindowPadding.y));
