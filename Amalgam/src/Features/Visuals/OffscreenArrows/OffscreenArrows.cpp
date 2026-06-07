@@ -2,6 +2,12 @@
 
 #include "../Groups/Groups.h"
 
+// Rotate a 2D point by (flCos, flSin) and offset by vPos
+static inline Vec2 Rot(Vec2 vPos, float flCos, float flSin, float x, float y)
+{
+	return { vPos.x + x * flCos - y * flSin, vPos.y + y * flCos + x * flSin };
+}
+
 void COffscreenArrows::DrawArrowTo(const Vec3& vFromPos, const Vec3& vToPos, Color_t tColor, int iOffset, float flMaxDistance)
 {
 	tColor.a *= Math::RemapVal(vFromPos.DistTo(vToPos), flMaxDistance, flMaxDistance * 0.9f, 0.f, 1.f);
@@ -25,28 +31,85 @@ void COffscreenArrows::DrawArrowTo(const Vec3& vFromPos, const Vec3& vToPos, Col
 	const float flSin = sin(flDeg);
 
 	float flOffset = -iOffset;
-	float flScale = H::Draw.Scale(25);
+	float flScale  = H::Draw.Scale(25);
 
 	Vec2 vPos = { flOffset * flCos, flOffset * flSin };
 	if (fabs(vPos.x) > vCenter.x - flScale || fabs(vPos.y) > vCenter.y - flScale)
 	{
 		Vec2 a = { -(vCenter.x - flScale) / vPos.x, -(vCenter.y - flScale) / vPos.y };
-		Vec2 b = { (vCenter.x - flScale) / vPos.x, (vCenter.y - flScale) / vPos.y };
+		Vec2 b = {  (vCenter.x - flScale) / vPos.x,  (vCenter.y - flScale) / vPos.y };
 		Vec2 c = { std::min(a.x, b.x), std::min(a.y, b.y) };
-		vPos *= fabsf(std::max(c.x, c.y));
+		vPos  *= fabsf(std::max(c.x, c.y));
 	}
 	vPos += vCenter;
 
-	Vec2 v1 = { 0, flScale / 2 },
-		v2 = { 0, -flScale / 2 },
-		v3 = { -flScale * sqrt(3.f) / 2, 0 };
-	H::Draw.FillPolygon(
-		{
-			{ { vPos.x + v1.x * flCos - v1.y * flSin, vPos.y + v1.y * flCos + v1.x * flSin } },
-			{ { vPos.x + v2.x * flCos - v2.y * flSin, vPos.y + v2.y * flCos + v2.x * flSin } },
-			{ { vPos.x + v3.x * flCos - v3.y * flSin, vPos.y + v3.y * flCos + v3.x * flSin } }
-		}, tColor
-	);
+	// Chevron shape (reference image: wide flat arrowhead with notched back)
+	// Local space (pointing left = toward target):
+	//   tip   : (-s,    0   )
+	//   right : ( s*0.3, s*0.55)
+	//   notch : (-s*0.1, 0  )   <- inward notch on back edge
+	//   left  : ( s*0.3,-s*0.55)
+	// (mirrored for both sides to form a 5-point chevron)
+	float s = flScale;
+	std::vector<Vec2> pts = {
+		{ -s,       0       },   // tip
+		{  s * 0.3f, s * 0.55f },  // back-right
+		{ -s * 0.1f, 0       },  // notch center
+		{  s * 0.3f,-s * 0.55f },  // back-left
+	};
+
+	std::vector<Vertex_t> vFill, vOutline;
+	for (auto& p : pts)
+	{
+		Vec2 r = Rot(vPos, flCos, flSin, p.x, p.y);
+		vFill.push_back(   { { r.x, r.y } });
+		vOutline.push_back({ { r.x, r.y } });
+	}
+
+	H::Draw.FillPolygon(vFill, tColor);
+
+	// Outline: slightly darker, full opacity driven by arrow alpha
+	Color_t tOutline = { byte(tColor.r * 0.35f), byte(tColor.g * 0.35f), byte(tColor.b * 0.35f), tColor.a };
+	H::Draw.LinePolygon(vOutline, tOutline);
+}
+
+void COffscreenArrows::DrawWorldArrow(const Vec3& vFromPos, const Vec3& vToPos, Color_t tColor, float flMaxDistance)
+{
+	tColor.a *= Math::RemapVal(vFromPos.DistTo(vToPos), flMaxDistance, flMaxDistance * 0.9f, 0.f, 1.f);
+	if (!tColor.a)
+		return;
+
+	// Direction from local to target, flattened to ground plane
+	Vec3 vDelta   = vToPos - vFromPos;
+	vDelta.z      = 0.f;
+	float flLen   = vDelta.Length();
+	if (flLen < 1.f)
+		return;
+	Vec3 vForward = vDelta / flLen;
+	Vec3 vRight   = { -vForward.y, vForward.x, 0.f };
+
+	// Place the arrow on the ground just outside the player's feet
+	float flGroundRadius = 40.f;
+	Vec3  vBase = vFromPos;
+	vBase.z     = vToPos.z; // snap to target ground height (approx)
+
+	Vec3 vOrigin = vBase + vForward * flGroundRadius;
+
+	float s = 20.f; // world-unit scale
+
+	// Same chevron: tip, back-right, notch, back-left
+	Vec3 vTip       = vOrigin + vForward *  s;
+	Vec3 vBackRight = vOrigin - vForward * (s * 0.3f) + vRight * (s * 0.55f);
+	Vec3 vNotch     = vOrigin - vForward * (s * 0.1f);
+	Vec3 vBackLeft  = vOrigin - vForward * (s * 0.3f) - vRight * (s * 0.55f);
+
+	// Fill via two triangles: tip-backRight-notch, tip-notch-backLeft
+	// Use RenderLine for outline edges (no filled world polygon API available)
+	Color_t tOutline = { byte(tColor.r * 0.35f), byte(tColor.g * 0.35f), byte(tColor.b * 0.35f), tColor.a };
+	H::Draw.RenderLine(vTip,       vBackRight, tOutline, false);
+	H::Draw.RenderLine(vBackRight, vNotch,     tOutline, false);
+	H::Draw.RenderLine(vNotch,     vBackLeft,  tOutline, false);
+	H::Draw.RenderLine(vBackLeft,  vTip,       tOutline, false);
 }
 
 void COffscreenArrows::Store()
@@ -73,7 +136,15 @@ void COffscreenArrows::Draw(CTFPlayer* pLocal)
 	if (m_mCache.empty())
 		return;
 
-	Vec3 vLocalPos = pLocal->GetEyePosition();
+	bool bThirdPerson = I::Input->CAM_IsThirdPerson();
+	Vec3 vLocalPos    = pLocal->GetEyePosition();
+
 	for (auto& [pEntity, tCache] : m_mCache)
-		DrawArrowTo(vLocalPos, pEntity->GetCenter(), tCache.m_tColor, tCache.m_iOffset, tCache.m_flMaxDistance);
+	{
+		Vec3 vTargetPos = pEntity->GetCenter();
+		DrawArrowTo(vLocalPos, vTargetPos, tCache.m_tColor, tCache.m_iOffset, tCache.m_flMaxDistance);
+
+		if (bThirdPerson)
+			DrawWorldArrow(vLocalPos, vTargetPos, tCache.m_tColor, tCache.m_flMaxDistance);
+	}
 }

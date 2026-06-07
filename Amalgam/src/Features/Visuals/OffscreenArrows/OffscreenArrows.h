@@ -12,6 +12,7 @@ class COffscreenArrows
 {
 private:
 	void DrawArrowTo(const Vec3& vFromPos, const Vec3& vToPos, Color_t tColor, int iOffset, float flMaxDistance);
+	void DrawWorldArrow(const Vec3& vFromPos, const Vec3& vToPos, Color_t tColor, float flMaxDistance);
 
 	std::unordered_map<CBaseEntity*, ArrowCache_t> m_mCache = {};
 

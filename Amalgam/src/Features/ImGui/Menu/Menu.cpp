@@ -3913,9 +3913,11 @@ struct FadingBind_t { std::string sName; int iBind; float flAlpha; int iRow; };
 static std::vector<FadingBind_t> s_vFadingOut = {};
 // Smoothed row count for window height animation
 static float s_flAnimatedCount = 0.f;
+static float s_flAnimatedWidth = 0.f;
 
-static constexpr float BIND_FADE_SPEED = 5.f;  // alpha/sec
-static constexpr float BIND_SIZE_SPEED = 10.f; // rows/sec
+static constexpr float BIND_FADE_SPEED = 12.f; // alpha/sec
+static constexpr float BIND_SIZE_SPEED = 18.f; // rows/sec
+static constexpr float BIND_WIDTH_SPEED = 400.f; // pixels/sec
 void CMenu::DrawBinds()
 {
 	using namespace ImGui;
@@ -4004,7 +4006,16 @@ void CMenu::DrawBinds()
 					if (tBind.m_bNot && (tBind.m_iType != BindEnum::Key || tBind.m_iInfo == BindEnum::KeyEnum::Hold))
 						sInfo = std::format("not {}", sInfo);
 
-					vInfo.emplace_back(tBind.m_sName.c_str(), sType, sInfo, iBind, tBind);
+					// State label shown in the bind list
+					std::string sState;
+					if (tBind.m_iType == BindEnum::Key && tBind.m_iInfo == BindEnum::KeyEnum::Hold)
+						sState = tBind.m_bActive ? "[Held]" : "";
+					else if (tBind.m_iType == BindEnum::Key && tBind.m_iInfo == BindEnum::KeyEnum::Toggle)
+						sState = tBind.m_bActive ? "[Toggled]" : "";
+					else
+						sState = "[Always]";
+
+					vInfo.emplace_back(tBind.m_sName.c_str(), sType, sState, iBind, tBind);
 				}
 
 				if (tBind.m_bActive || m_bIsOpen)
@@ -4012,8 +4023,7 @@ void CMenu::DrawBinds()
 			}
 		};
 	fGetBinds(DEFAULT_BIND);
-	if (vInfo.empty())
-		return;
+	bool bEmpty = vInfo.empty();
 
 	static DragBox_t tOld = { -2147483648, -2147483648 };
 	DragBox_t tDragBox = m_bIsOpen ? FGet(Vars::Menu::BindsDisplay, true) : Vars::Menu::BindsDisplay.Value;
@@ -4031,9 +4041,12 @@ void CMenu::DrawBinds()
 	PopFont();
 	flNameWidth += H::Draw.Scale(9), flInfoWidth += H::Draw.Scale(9), flStateWidth += H::Draw.Scale(9);
 
-	float flWidth = flNameWidth + flInfoWidth + flStateWidth + (m_bIsOpen ? H::Draw.Scale(113) : H::Draw.Scale(14));
+	// Minimum width: wide enough to match the reference layout even when empty
+	float flTitleMinWidth = H::Draw.Scale(160);
 
-	// Smooth the row count toward the real count for a sliding height animation
+	float flWidth = std::max(flTitleMinWidth, flNameWidth + flStateWidth + H::Draw.Scale(m_bIsOpen ? 129 : 24));
+
+	// Smooth the row count and width for sliding animations
 	float flDT = ImGui::GetIO().DeltaTime;
 	float flTargetCount = float(vInfo.size());
 	if (s_flAnimatedCount < flTargetCount)
@@ -4041,8 +4054,15 @@ void CMenu::DrawBinds()
 	else
 		s_flAnimatedCount = std::max(flTargetCount, s_flAnimatedCount - BIND_SIZE_SPEED * flDT);
 
-	float flHeight = H::Draw.Scale(18 * s_flAnimatedCount + (Vars::Menu::BindWindowTitle.Value ? 42 : 12));
-	SetNextWindowSize({ flWidth, flHeight }, ImGuiCond_Always);
+	if (s_flAnimatedWidth < flWidth)
+		s_flAnimatedWidth = std::min(flWidth, s_flAnimatedWidth + BIND_WIDTH_SPEED * flDT);
+	else
+		s_flAnimatedWidth = std::max(flWidth, s_flAnimatedWidth - BIND_WIDTH_SPEED * flDT);
+
+	// Title-only height when empty, otherwise include rows
+	float flTitleHeight = H::Draw.Scale(Vars::Menu::BindWindowTitle.Value ? 30 : 12);
+	float flHeight = flTitleHeight + H::Draw.Scale(18 * s_flAnimatedCount);
+	SetNextWindowSize({ s_flAnimatedWidth, flHeight }, ImGuiCond_Always);
 	PushStyleVar(ImGuiStyleVar_WindowMinSize, { H::Draw.Scale(40), H::Draw.Scale(40) });
 	if (Begin("Binds", nullptr, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoSavedSettings))
 	{
@@ -4068,14 +4088,31 @@ void CMenu::DrawBinds()
 		int iListStart = 8;
 		if (Vars::Menu::BindWindowTitle.Value)
 		{
-			SetCursorPos({ H::Draw.Scale(8), H::Draw.Scale(6) });
-			IconImage(ICON_MD_KEYBOARD, F::Render.Accent);
-			PushFont(F::Render.FontLarge);
-			SetCursorPos({ H::Draw.Scale(30), H::Draw.Scale(7) });
-			FText("Binds");
+			// "Key" in active color, "binds" in accent color
+			PushFont(F::Render.FontRegular);
+			SetCursorPos({ H::Draw.Scale(8), H::Draw.Scale(7) });
+			PushStyleColor(ImGuiCol_Text, F::Render.Active.Value);
+			FText("Key");
+			PopStyleColor();
+			SameLine(0, 0);
+			PushStyleColor(ImGuiCol_Text, F::Render.Accent.Value);
+			FText("binds");
+			PopStyleColor();
 			PopFont();
 
-			iListStart = 36;
+			// Divider line — only shown when there are entries
+			if (!bEmpty)
+			{
+				ImVec2 vWinDrawPos = GetDrawPos();
+				ImVec2 vWinSize = GetWindowSize();
+				float  flDivY = vWinDrawPos.y + H::Draw.Scale(24);
+				GetWindowDrawList()->AddLine(
+					{ vWinDrawPos.x + H::Draw.Scale(6),              flDivY },
+					{ vWinDrawPos.x + vWinSize.x - H::Draw.Scale(6), flDivY },
+					F::Render.Accent, H::Draw.Scale());
+			}
+
+			iListStart = 30;
 		}
 
 		// Update fade-in alphas and track which binds are currently visible
@@ -4118,27 +4155,31 @@ void CMenu::DrawBinds()
 		PushFont(F::Render.FontSmall);
 		int i = 0; for (auto& [sName, sInfo, sState, iBind, tBind] : vInfo)
 		{
-			float flPosX = 0;
 			float flAlpha = s_mBindAlpha.count(iBind) ? s_mBindAlpha[iBind] : 1.f;
-			s_mBindLastRow[iBind] = i; // track for fade-out positioning
+			s_mBindLastRow[iBind] = i;
 
 			if (m_bIsOpen)
 				PushTransparent(!F::Binds.WillBeEnabled(iBind), true);
 
 			PushStyleVar(ImGuiStyleVar_Alpha, GetStyle().Alpha * flAlpha);
 
-			SetCursorPos({ flPosX += H::Draw.Scale(12), H::Draw.Scale(iListStart + 18 * i) });
+			float flRowY = H::Draw.Scale(iListStart + 18 * i);
+
+			// Name — left side
+			SetCursorPos({ H::Draw.Scale(8), flRowY });
 			PushStyleColor(ImGuiCol_Text, tBind.m_bActive ? F::Render.Accent.Value : F::Render.Inactive.Value);
 			FText(sName);
 			PopStyleColor();
 
-			SetCursorPos({ flPosX += flNameWidth, H::Draw.Scale(iListStart + 18 * i) });
-			PushStyleColor(ImGuiCol_Text, tBind.m_bActive ? F::Render.Active.Value : F::Render.Inactive.Value);
-			FText(sInfo.c_str());
-
-			SetCursorPos({ flPosX += flInfoWidth, H::Draw.Scale(iListStart + 18 * i) });
-			FText(sState.c_str());
-			PopStyleColor();
+			// State — right side, right-aligned
+			{
+				float flStateW = FCalcTextSize(sState.c_str()).x;
+				float flRightEdge = m_bIsOpen ? flWidth - H::Draw.Scale(109) : s_flAnimatedWidth - H::Draw.Scale(8);
+				SetCursorPos({ flRightEdge - flStateW, flRowY });
+				PushStyleColor(ImGuiCol_Text, tBind.m_bActive ? F::Render.Active.Value : F::Render.Inactive.Value);
+				FText(sState.c_str());
+				PopStyleColor();
+			}
 
 			PopStyleVar();
 
@@ -4204,7 +4245,7 @@ void CMenu::DrawBinds()
 		for (auto& fb : s_vFadingOut)
 		{
 			PushStyleVar(ImGuiStyleVar_Alpha, GetStyle().Alpha * fb.flAlpha);
-			SetCursorPos({ H::Draw.Scale(12), H::Draw.Scale(iListStart + 18 * fb.iRow) });
+			SetCursorPos({ H::Draw.Scale(8), H::Draw.Scale(iListStart + 18 * fb.iRow) });
 			PushStyleColor(ImGuiCol_Text, F::Render.Inactive.Value);
 			FText(fb.sName.c_str());
 			PopStyleColor();
