@@ -176,13 +176,14 @@ NAMESPACE_BEGIN(Vars)
 		CVar(BindWindowTitle, "Bind window title", true);
 		CVar(MenuShowsBinds, "Menu shows binds", false, NOBIND);
 
-		CVarEnum(Indicators, "Indicators", 0b00000, VISUAL | DROPDOWN_MULTI, nullptr,
-			VA_LIST("Ticks", "Crit hack", "Spectators", "Ping", "Conditions", "Seed prediction"),
-			Ticks = 1 << 0, CritHack = 1 << 1, Spectators = 1 << 2, Ping = 1 << 3, Conditions = 1 << 4, SeedPrediction = 1 << 5);
+		CVarEnum(Indicators, "Indicators", 0b000000, VISUAL | DROPDOWN_MULTI, nullptr,
+			VA_LIST("Ticks", "Crit hack", "Spectators", "Ping", "Conditions", "Seed prediction", "Watermark"),
+			Ticks = 1 << 0, CritHack = 1 << 1, Spectators = 1 << 2, Ping = 1 << 3, Conditions = 1 << 4, SeedPrediction = 1 << 5, Watermark = 1 << 6);
 
 		CVar(BindsDisplay, "Binds display", DragBox_t(100, 100), VISUAL | NOBIND);
 		CVar(TicksDisplay, "Ticks display", DragBox_t(), VISUAL | NOBIND);
 		CVar(CritsDisplay, "Crits display", DragBox_t(), VISUAL | NOBIND);
+		CVar(WatermarkDisplay, "Watermark display", DragBox_t(10, 10), VISUAL | NOBIND);
 		CVar(SpectatorsDisplay, "Spectators display", DragBox_t(), VISUAL | NOBIND);
 		CVar(PingDisplay, "Ping display", DragBox_t(), VISUAL | NOBIND);
 		CVar(ConditionsDisplay, "Conditions display", DragBox_t(), VISUAL | NOBIND);
@@ -823,7 +824,6 @@ NAMESPACE_BEGIN(Vars)
 			CVar(RemoveDSP, "Remove DSP", false);
 			CVar(GiantWeaponSounds, "Giant weapon sounds", false);
 		NAMESPACE_END(Sound)
-
 	NAMESPACE_END(Misc)
 
 	NAMESPACE_BEGIN(Logging)

@@ -3962,7 +3962,7 @@ void CMenu::DrawBinds()
 
 	// Measure widths
 	float flNameWidth = 0, flStateWidth = 0;
-	PushFont(F::Render.FontSmall);
+	PushFont(F::Render.FontRegular);
 	for (auto& [sName, sInfo, sState, iBind, tBind] : vInfo)
 	{
 		flNameWidth  = std::max(flNameWidth,  FCalcTextSize(sName).x);
@@ -3974,7 +3974,7 @@ void CMenu::DrawBinds()
 
 	// Minimum width from title
 	PushFont(F::Render.FontRegular);
-	float flTitleMinW = FCalcTextSize("Keybinds").x + H::Draw.Scale(100.f);
+	float flTitleMinW = FCalcTextSize("Keybinds").x + H::Draw.Scale(105.f);
 	PopFont();
 
 	float flTargetWidth = std::max(flTitleMinW, flNameWidth + flStateWidth + H::Draw.Scale(m_bIsOpen ? 129.f : 24.f));
@@ -4004,10 +4004,7 @@ void CMenu::DrawBinds()
 		ImVec2 vWindowSize = GetWindowSize();
 
 		// Background
-		if (Vars::Menu::BindWindowTitle.Value)
-			RenderTwoToneBackground(H::Draw.Scale(28), F::Render.Background0, F::Render.Background0, F::Render.Background0, H::Draw.Scale());
-		else
-			RenderBackground(F::Render.Background0p5, F::Render.Background2);
+		RenderBackground(F::Render.Background1, F::Render.Background2);
 
 		// Accent outline — foreground so it's always on top
 		{
@@ -4036,7 +4033,7 @@ void CMenu::DrawBinds()
 			FText("binds");
 			PopStyleColor();
 			PopFont();
-			iListStart = 28;
+			iListStart = 30;
 		}
 
 		// Fade animations
@@ -4067,7 +4064,7 @@ void CMenu::DrawBinds()
 		}), s_vFadingOut.end());
 
 		// Render active entries
-		PushFont(F::Render.FontSmall);
+		PushFont(F::Render.FontRegular);
 		int i = 0;
 		for (auto& [sName, sInfo, sState, iBind, tBind] : vInfo)
 		{
@@ -4080,7 +4077,7 @@ void CMenu::DrawBinds()
 
 			// Name — instant opacity (no fade on name, only on list movement)
 			SetCursorPos({ H::Draw.Scale(8), flRowY });
-			PushStyleColor(ImGuiCol_Text, tBind.m_bActive ? F::Render.Accent.Value : F::Render.Inactive.Value);
+			PushStyleColor(ImGuiCol_Text, ImVec4(1.f, 1.f, 1.f, 1.f));
 			FText(sName);
 			PopStyleColor();
 
@@ -4091,7 +4088,7 @@ void CMenu::DrawBinds()
 				float flStateW  = FCalcTextSize(sState.c_str()).x;
 				float flRightEdge = m_bIsOpen ? flWidth - H::Draw.Scale(109.f) : s_flAnimatedWidth - H::Draw.Scale(8.f);
 				SetCursorPos({ flRightEdge - flStateW, flRowY });
-				PushStyleColor(ImGuiCol_Text, F::Render.Active.Value);
+				PushStyleColor(ImGuiCol_Text, F::Render.Accent.Value);
 				FText(sState.c_str());
 				PopStyleColor();
 				PopStyleVar();
@@ -4193,7 +4190,7 @@ void CMenu::DrawSpecList()
 	if (!(Vars::Menu::Indicators.Value & Vars::Menu::IndicatorsEnum::Spectators))
 		return;
 
-	if (I::EngineVGui->IsGameUIVisible())
+	if (!I::EngineClient->IsInGame())
 		return;
 
 	auto& vSpecs = F::SpectatorList.m_vSpectators;
@@ -4201,7 +4198,7 @@ void CMenu::DrawSpecList()
 
 	// Measure content
 	float flNameW = 0.f, flModeW = 0.f;
-	PushFont(F::Render.FontSmall);
+	PushFont(F::Render.FontRegular);
 	for (auto& s : vSpecs)
 	{
 		flNameW = std::max(flNameW, FCalcTextSize(s.m_sName.c_str()).x);
@@ -4210,7 +4207,7 @@ void CMenu::DrawSpecList()
 	PopFont();
 
 	PushFont(F::Render.FontRegular);
-	float flTitleMinW = FCalcTextSize("Speclist").x + H::Draw.Scale(100.f);
+	float flTitleMinW = FCalcTextSize("Speclist").x + H::Draw.Scale(105.f);
 	PopFont();
 
 	float flTargetW = std::max(flTitleMinW, flNameW + flModeW + H::Draw.Scale(24.f));
@@ -4302,7 +4299,7 @@ void CMenu::DrawSpecList()
 			}), s_vSpecFadingOut.end());
 
 		// Render entries
-		PushFont(F::Render.FontSmall);
+		PushFont(F::Render.FontRegular);
 		int i = 0;
 		for (auto& s : vSpecs)
 		{
@@ -4311,7 +4308,7 @@ void CMenu::DrawSpecList()
 			float flRowY  = H::Draw.Scale(float(iListStart) + 18.f * float(i));
 
 			SetCursorPos({ H::Draw.Scale(8.f), flRowY });
-			PushStyleColor(ImGuiCol_Text, F::Render.Active.Value);
+			PushStyleColor(ImGuiCol_Text, ImVec4(1.f, 1.f, 1.f, 1.f));
 			FText(s.m_sName.c_str());
 			PopStyleColor();
 
@@ -4319,7 +4316,7 @@ void CMenu::DrawSpecList()
 				PushStyleVar(ImGuiStyleVar_Alpha, GetStyle().Alpha * flAlpha);
 				float flModeW2 = FCalcTextSize(s.m_sMode.c_str()).x;
 				SetCursorPos({ flWindowW - H::Draw.Scale(8.f) - flModeW2, flRowY });
-				PushStyleColor(ImGuiCol_Text, F::Render.Inactive.Value);
+				PushStyleColor(ImGuiCol_Text, F::Render.Accent.Value);
 				FText(s.m_sMode.c_str());
 				PopStyleColor();
 				PopStyleVar();
@@ -4343,16 +4340,104 @@ void CMenu::DrawSpecList()
 	PopStyleVar();
 }
 
-void CMenu::DrawSpectators()
+void CMenu::DrawWatermark()
 {
-	if (!(Vars::Menu::Indicators.Value & Vars::Menu::IndicatorsEnum::Spectators))
+	using namespace ImGui;
+
+	if (!(Vars::Menu::Indicators.Value & Vars::Menu::IndicatorsEnum::Watermark))
 		return;
 
-	auto pLocal = H::Entities.GetLocal();
-	if (!pLocal)
-		return;
+	float flDT = GetIO().DeltaTime;
 
-	F::SpectatorList.Draw(pLocal);
+	// Streamer mode hides the username section — animate its width collapsing
+	bool bStreamer = Vars::Visuals::UI::StreamerMode.Value != Vars::Visuals::UI::StreamerModeEnum::Off;
+	const char* szName = I::SteamFriends->GetPersonaName();
+	std::string sUserSection = std::format(" | user: {}", szName ? szName : "unknown");
+
+	// Animated width for the user section
+	static float s_flUserW = 0.f;
+	PushFont(F::Render.FontRegular);
+	float flUserFullW = FCalcTextSize(sUserSection.c_str()).x;
+	PopFont();
+
+	float flTargetUserW = bStreamer ? 0.f : flUserFullW;
+	float flAnimSpeed = 450.f * flDT;
+	if (s_flUserW < flTargetUserW)
+		s_flUserW = std::min(flTargetUserW, s_flUserW + flAnimSpeed);
+	else
+		s_flUserW = std::max(flTargetUserW, s_flUserW - flAnimSpeed);
+
+	// Measure full window width
+	PushFont(F::Render.FontRegular);
+	float flTiffyW  = FCalcTextSize("tiffy").x;
+	float flGramW   = FCalcTextSize("gram").x;
+	float flPadding = H::Draw.Scale(16.f);
+	float flWindowW = flTiffyW + flGramW + s_flUserW + flPadding;
+	float flWindowH = H::Draw.Scale(22.f);
+	PopFont();
+
+	// Position
+	static DragBox_t tOld = { -2147483648, -2147483648 };
+	DragBox_t tDrag = m_bIsOpen ? FGet(Vars::Menu::WatermarkDisplay, true) : Vars::Menu::WatermarkDisplay.Value;
+	if (tDrag != tOld)
+		SetNextWindowPos({ float(tDrag.x), float(tDrag.y) }, ImGuiCond_Always);
+
+	SetNextWindowSize({ flWindowW, flWindowH }, ImGuiCond_Always);
+	PushStyleVar(ImGuiStyleVar_WindowMinSize, { H::Draw.Scale(40), H::Draw.Scale(20) });
+	if (Begin("##Watermark", nullptr,
+		ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse |
+		ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoFocusOnAppearing |
+		ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_AlwaysAutoResize))
+	{
+		ImVec2 vWinPos  = GetWindowPos();
+		ImVec2 vWinSize = GetWindowSize();
+
+		// Background
+		RenderBackground(F::Render.Background0p5, F::Render.Background2);
+
+		// Accent outline — foreground, always on top
+		{
+			float flInset = H::Draw.Scale(0.5f) - 0.5f;
+			GetForegroundDrawList()->AddRect(
+				vWinPos + ImVec2(flInset, flInset),
+				vWinPos + vWinSize - ImVec2(flInset, flInset),
+				F::Render.Accent, 0.f, ImDrawFlags_None, H::Draw.Scale());
+		}
+
+		tDrag.x = int(vWinPos.x); tDrag.y = int(vWinPos.y); tOld = tDrag;
+		if (m_bIsOpen)
+			FSet(Vars::Menu::WatermarkDisplay, tDrag);
+
+		// "tiffy" (active) + "gram" (accent)
+		PushFont(F::Render.FontRegular);
+		float flTextY = H::Draw.Scale(4.f);
+		SetCursorPos({ H::Draw.Scale(8.f), flTextY });
+		PushStyleColor(ImGuiCol_Text, F::Render.Active.Value);
+		FText("tiffy");
+		PopStyleColor();
+		SameLine(0, 0);
+		PushStyleColor(ImGuiCol_Text, F::Render.Accent.Value);
+		FText("gram");
+		PopStyleColor();
+
+		// User section — clipped to animated width
+		if (s_flUserW > 1.f)
+		{
+			SameLine(0, 0);
+			// Clip so text doesn't overflow during animation
+			ImVec2 vClipMin = GetCursorScreenPos();
+			ImVec2 vClipMax = { vClipMin.x + s_flUserW, vClipMin.y + flWindowH };
+			PushClipRect(vClipMin, vClipMax, true);
+			PushStyleColor(ImGuiCol_Text, F::Render.Inactive.Value);
+			FText(sUserSection.c_str());
+			PopStyleColor();
+			PopClipRect();
+		}
+		PopFont();
+
+		End();
+	}
+	PopStyleVar();
 }
 
 static inline void ManageVars()
@@ -4390,6 +4475,7 @@ void CMenu::Render()
 		DrawMenu();
 
 		AddDraggable("Ticks", Vars::Menu::TicksDisplay, FGet(Vars::Menu::Indicators) & Vars::Menu::IndicatorsEnum::Ticks);
+		AddDraggable("Watermark", Vars::Menu::WatermarkDisplay, FGet(Vars::Menu::Indicators) & Vars::Menu::IndicatorsEnum::Watermark);
 		AddDraggable("Crit hack", Vars::Menu::CritsDisplay, FGet(Vars::Menu::Indicators) & Vars::Menu::IndicatorsEnum::CritHack);
 		AddDraggable("Spectators", Vars::Menu::SpectatorsDisplay, FGet(Vars::Menu::Indicators) & Vars::Menu::IndicatorsEnum::Spectators);
 		AddDraggable("Ping", Vars::Menu::PingDisplay, FGet(Vars::Menu::Indicators) & Vars::Menu::IndicatorsEnum::Ping);
@@ -4420,6 +4506,7 @@ void CMenu::Render()
 	}
 	DrawBinds();
 	DrawSpecList();
+	DrawWatermark();
 	PopFont();
 }
 

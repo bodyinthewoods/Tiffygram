@@ -3,6 +3,10 @@
 #include "../../Players/PlayerUtils.h"
 #include "../../Spectate/Spectate.h"
 
+void CSpectatorList::DrawImGui()
+{
+}
+
 void CSpectatorList::GetSpectators(CTFPlayer* pLocal, CTFPlayer* pTarget)
 {
 	m_vSpectators.clear();

@@ -7,8 +7,8 @@ void CFonts::Reload(float flDPI, bool bOutline)
 {
 	int iFlags = !bOutline ? FONTFLAG_NONE : FONTFLAG_NONE | FONTFLAG_DROPSHADOW;
 
-	m_mFonts[FONT_ESP] = { "Tahoma", int(12.f * flDPI), iFlags, 0 };
-	m_mFonts[FONT_INDICATORS] = { "Tahoma", int(13.f * flDPI), iFlags, 800 };
+	m_mFonts[FONT_ESP] = { "Tahoma", int(13.f * flDPI), iFlags, 0 };
+	m_mFonts[FONT_INDICATORS] = { "Tahoma", int(13.f * flDPI), iFlags, 0 };
 
 	for (auto& fFont : m_mFonts | std::views::values)
 	{
