@@ -823,6 +823,7 @@ NAMESPACE_BEGIN(Vars)
 			CVar(RemoveDSP, "Remove DSP", false);
 			CVar(GiantWeaponSounds, "Giant weapon sounds", false);
 		NAMESPACE_END(Sound)
+
 	NAMESPACE_END(Misc)
 
 	NAMESPACE_BEGIN(Logging)

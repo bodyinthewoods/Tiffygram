@@ -5,6 +5,8 @@
 #include "../Aimbot/AutoRocketJump/AutoRocketJump.h"
 #include "../Backtrack/Backtrack.h"
 #include "../AntiCheatCompatibility/AntiCheatCompatibility.h"
+#include <ImGui/imgui.h>
+#include <ImGui/imgui_internal.h>
 
 void CTicks::Reset()
 {
@@ -341,7 +343,7 @@ int CTicks::GetTicks(CTFWeaponBase* pWeapon)
 	int iTicks = std::min(m_iShiftedTicks + 1, 22);
 	if (!(iTicks >= Vars::Doubletap::TickLimit.Value || pWeapon && GetShotsWithinPacket(pWeapon, iTicks) > 1))
 		return 0;
-	
+
 	return std::min(Vars::Doubletap::TickLimit.Value - 1, m_iMaxShift);
 }
 
@@ -416,26 +418,59 @@ void CTicks::Draw(CTFPlayer* pLocal)
 
 	if (m_bSpeedhack)
 		return H::Draw.StringOutlined(fFont, dtPos.x, dtPos.y + 2, Vars::Menu::Theme::Active.Value, Vars::Menu::Theme::Background.Value, ALIGN_TOP, std::format("Speedhack x{}", Vars::Speedhack::Scale.Value).c_str());
-	
+
 	int iAntiAimTicks = F::AntiAim.YawOn() ? F::AntiAim.AntiAimTicks() : 0;
 	int iTicks = std::clamp(m_iShiftedTicks + std::max(I::ClientState->chokedcommands - iAntiAimTicks, 0), 0, m_iMaxUsrCmdProcessTicks);
-	int iMax = std::max(m_iMaxUsrCmdProcessTicks - iAntiAimTicks, 0);
+	int iMax = std::max(m_iMaxUsrCmdProcessTicks - iAntiAimTicks, 1);
 
-	float flRatio = float(iTicks) / float(iMax);
-	int iSizeX = H::Draw.Scale(100, Scale_Round), iSizeY = H::Draw.Scale(12, Scale_Round);
-	int iPosX = dtPos.x - iSizeX / 2, iPosY = dtPos.y + fFont.m_nTall + H::Draw.Scale(4) + 1;
+	float flRatio = std::clamp(float(iTicks) / float(iMax), 0.f, 1.f);
 
-	H::Draw.StringOutlined(fFont, dtPos.x, dtPos.y + 2, Vars::Menu::Theme::Active.Value, Vars::Menu::Theme::Background.Value, ALIGN_TOP, std::format("Ticks {} / {}", iTicks, iMax).c_str());
-	if (m_iWait)
-		H::Draw.StringOutlined(fFont, dtPos.x, dtPos.y + fFont.m_nTall + H::Draw.Scale(18, Scale_Round) + 1, Vars::Menu::Theme::Active.Value, Vars::Menu::Theme::Background.Value, ALIGN_TOP, "Not Ready");
+	// Animate the fill ratio smoothly
+	static float s_flAnimRatio = 0.f;
+	float flAnimSpeed = 18.f * ImGui::GetIO().DeltaTime;
+	if (s_flAnimRatio < flRatio)
+		s_flAnimRatio = std::min(flRatio, s_flAnimRatio + flAnimSpeed);
+	else
+		s_flAnimRatio = std::max(flRatio, s_flAnimRatio - flAnimSpeed);
 
-	H::Draw.FillRoundRect(iPosX, iPosY, iSizeX, iSizeY, H::Draw.Scale(4, Scale_Round), { 0, 0, 0, 255}, 16);
-	if (flRatio)
+	// Bar: sharp rectangle, thin like reference
+	int iBarW = H::Draw.Scale(80, Scale_Round);
+	int iBarH = H::Draw.Scale(6, Scale_Round);
+	int iBarX = dtPos.x - iBarW / 2;
+	int iBarY = dtPos.y;
+
+	// Text above bar, centered — use small font
+	const auto& fSmall = H::Fonts.GetFont(FONT_INDICATORS);
+	std::string sText = std::format("Cortisol {} / {}", iTicks, iMax);
+	H::Draw.StringOutlined(fSmall, iBarX + iBarW / 2, iBarY - fSmall.m_nTall - H::Draw.Scale(2),
+		Vars::Menu::Theme::Active.Value, Vars::Menu::Theme::Background.Value,
+		ALIGN_CENTER, sText.c_str());
+
+	// Filled border rect behind everything
+	H::Draw.FillRect(iBarX - 2, iBarY - 2, iBarW + 4, iBarH + 4, Vars::Menu::Theme::Background.Value);
+
+	// Bar background fill
+	H::Draw.FillRect(iBarX, iBarY, iBarW, iBarH, Vars::Menu::Theme::Background.Value);
+
+	// Gradient fill clipped to animated ratio
+	if (s_flAnimRatio > 0.f)
 	{
-		iSizeX -= H::Draw.Scale(2, Scale_Ceil) * 2, iSizeY -= H::Draw.Scale(2, Scale_Ceil) * 2;
-		iPosX += H::Draw.Scale(2, Scale_Round), iPosY += H::Draw.Scale(2, Scale_Round);
-		H::Draw.StartClipping(iPosX, iPosY, iSizeX * flRatio, iSizeY);
-		H::Draw.FillRoundRect(iPosX, iPosY, iSizeX, iSizeY, H::Draw.Scale(3, Scale_Round), Vars::Menu::Theme::Accent.Value, 16);
-		H::Draw.EndClipping();
+		int iFillW = int(float(iBarW) * s_flAnimRatio);
+		Color_t tBg = Vars::Menu::Theme::Background.Value;
+		Color_t tAcc = Vars::Menu::Theme::Accent.Value;
+		const int iSlices = 32;
+		for (int i = 0; i < iSlices; i++)
+		{
+			float t = float(i) / float(iSlices - 1);
+			int   iSX = iBarX + int(float(iFillW) * float(i) / float(iSlices));
+			int   iEX = iBarX + int(float(iFillW) * float(i + 1) / float(iSlices));
+			Color_t tCol = {
+				byte(tBg.r + t * (tAcc.r - tBg.r)),
+				byte(tBg.g + t * (tAcc.g - tBg.g)),
+				byte(tBg.b + t * (tAcc.b - tBg.b)),
+				255
+			};
+			H::Draw.FillRect(iSX, iBarY, iEX - iSX, iBarH, tCol);
+		}
 	}
 }

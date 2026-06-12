@@ -1,23 +1,22 @@
 #pragma once
 #include "../../../SDK/SDK.h"
+#include <unordered_set>
 
 class CSpectatorList
 {
-private:
+public:
+	void DrawImGui();
 	struct Spectator_t
 	{
 		std::string m_sName;
-		const char* m_sMode;
-		float m_flRespawnIn;
-		bool m_bRespawnTimeIncreased;
-		int m_iIndex;
+		std::string m_sMode;
+		int         m_iIndex;
 	};
 
 	std::vector<Spectator_t> m_vSpectators = {};
 	std::unordered_map<int, float> m_mRespawnCache = {};
 
-public:
-	bool GetSpectators(CTFPlayer* pTarget);
+	void GetSpectators(CTFPlayer* pLocal, CTFPlayer* pTarget);
 	void Draw(CTFPlayer* pLocal);
 };
 
